@@ -1,0 +1,3922 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jacaré das Promos - Dashboard por Abas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --card-bg: rgba(22, 30, 49, 0.7);
+      --card-border: rgba(45, 212, 191, 0.15);
+      --primary-green: #10b981;
+      --accent-cyan: #06b6d4;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --badge-discount: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.12) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto 2rem auto;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-icon {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #ffffff 30%, #a7f3d0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* SISTEMA DE ABAS (TABS) */
+    .tabs-wrapper {
+      max-width: 1400px;
+      margin: 0 auto 2rem auto;
+      display: flex;
+      gap: 0.8rem;
+      overflow-x: auto;
+      padding-bottom: 0.8rem;
+      scrollbar-width: thin;
+    }
+
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      padding: 0.75rem 1.4rem;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tab-btn:hover {
+      background: rgba(16, 185, 129, 0.15);
+      color: #fff;
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .tab-count {
+      background: rgba(0, 0, 0, 0.25);
+      padding: 0.15rem 0.5rem;
+      border-radius: 99px;
+      font-size: 0.8rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(16, 185, 129, 0.4);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .img-wrapper {
+      width: 100%;
+      height: 200px;
+      position: relative;
+      background: rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+
+    .img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .discount-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--badge-discount);
+      color: #fff;
+      font-weight: 900;
+      font-size: 0.8rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 8px;
+    }
+
+    .commission-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 8px;
+    }
+
+    .card-content {
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .shop-name {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--accent-cyan);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+    }
+
+    .product-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+      color: #f9fafb;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .metrics {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .price-box {
+      margin-top: auto;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .price-old {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .price-current {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #10b981;
+    }
+
+    .btn-buy {
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      color: #fff;
+      font-weight: 700;
+      padding: 0.75rem;
+      border-radius: 10px;
+      text-decoration: none;
+      margin-top: 1rem;
+    }
+
+    .preview-telegram {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      padding: 0.8rem;
+      margin-top: 1rem;
+      font-size: 0.75rem;
+      font-family: monospace;
+      white-space: pre-wrap;
+      color: #cbd5e1;
+      border-left: 3px solid var(--accent-cyan);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🐊</div>
+      <div>
+        <h1>Jacaré das Promos</h1>
+        <p>Curadoria por Categorias (Máximo de 10 itens por aba)</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ABAS DAS CATEGORIAS -->
+  <div class="tabs-wrapper">
+    
+      <button class="tab-btn active" onclick="switchTab(0)">
+        <span>🚗 Automotivo, Pneus & Acessórios</span>
+        <span class="tab-count">10</span>
+      </button>
+    
+      <button class="tab-btn " onclick="switchTab(1)">
+        <span>🖥️ PC Gamer, Hardware & Monitores</span>
+        <span class="tab-count">10</span>
+      </button>
+    
+      <button class="tab-btn " onclick="switchTab(2)">
+        <span>🎮 Videogames, Consoles & Jogos</span>
+        <span class="tab-count">10</span>
+      </button>
+    
+      <button class="tab-btn " onclick="switchTab(3)">
+        <span>📱 Celulares & Acessórios</span>
+        <span class="tab-count">10</span>
+      </button>
+    
+      <button class="tab-btn " onclick="switchTab(4)">
+        <span>🏠 Eletrodomésticos Grandes & Lavadoras</span>
+        <span class="tab-count">10</span>
+      </button>
+    
+      <button class="tab-btn " onclick="switchTab(5)">
+        <span>☕ Cozinha, Cafeteiras & Café</span>
+        <span class="tab-count">10</span>
+      </button>
+    
+      <button class="tab-btn " onclick="switchTab(6)">
+        <span>🎵 Áudio & Caixas de Som</span>
+        <span class="tab-count">10</span>
+      </button>
+    
+      <button class="tab-btn " onclick="switchTab(7)">
+        <span>🧰 Ferramentas & Oficina</span>
+        <span class="tab-count">10</span>
+      </button>
+    
+      <button class="tab-btn " onclick="switchTab(8)">
+        <span>⚽ Esporte, Tênis & Suplementos</span>
+        <span class="tab-count">10</span>
+      </button>
+    
+      <button class="tab-btn " onclick="switchTab(9)">
+        <span>💄 Perfumaria & Cuidados</span>
+        <span class="tab-count">10</span>
+      </button>
+    
+  </div>
+
+  <div class="container">
+    
+        <div id="tab-content-0" class="tab-content active">
+          <div class="grid">
+            
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820lg-mldwetnx7bpg72" alt="Óculos de Sol London Gatinho Premium Vintage Clássico Retrô Blogueira uv400 Feminino" loading="lazy">
+                    <div class="discount-badge">-45%</div>
+                    <div class="commission-badge">+63.0% (R$ 34,64)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Fortuna Sunglasses</div>
+                    <h3 class="product-title" title="Óculos de Sol London Gatinho Premium Vintage Clássico Retrô Blogueira uv400 Feminino">Óculos de Sol London Gatinho Premium Vintage Clássico Retrô Blogueira uv400 Feminino</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 97+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 54.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/gOtAdpvGQ" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🚗 Automotivo, Pneus & Acessórios
+🔥 *Óculos de Sol London Gatinho Premium Vintage Clássico Retrô Blogueira uv400 Feminino*
+
+⭐ 4.9 | 🛍️ 97+ vendidos
+
+💰 *R$ 54,99*
+
+📉 *45% OFF*
+
+💸 Comissão Estimada: R$ 34,64 (63.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/gOtAdpvGQ</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820lc-mmaclh8gzu9s92" alt="Óculos de Sol Race Esportivo Feminino Baixa Pace Premium Bike Corrida Running uv400" loading="lazy">
+                    <div class="discount-badge">-63%</div>
+                    <div class="commission-badge">+63.0% (R$ 34,64)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Fortuna Sunglasses</div>
+                    <h3 class="product-title" title="Óculos de Sol Race Esportivo Feminino Baixa Pace Premium Bike Corrida Running uv400">Óculos de Sol Race Esportivo Feminino Baixa Pace Premium Bike Corrida Running uv400</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.8</div>
+                      <div>🛍️ 32+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 149.99</div>
+                        <div class="price-current">R$ 54.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/qiJMwpHvT" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🚗 Automotivo, Pneus & Acessórios
+🔥 *Óculos de Sol Race Esportivo Feminino Baixa Pace Premium Bike Corrida Running uv400*
+
+⭐ 4.8 | 🛍️ 32+ vendidos
+
+💰 ~~R$ 149,99~~ por *R$ 54,99*
+📉 *63% OFF*
+
+💸 Comissão Estimada: R$ 34,64 (63.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/qiJMwpHvT</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820ld-mlf4oz6c4ttw04" alt="Óculos de Sol Hexagonal Feminino Clássico Retrô Vintage Aviador Moda Vintage Oldstyle uv400" loading="lazy">
+                    <div class="discount-badge">-45%</div>
+                    <div class="commission-badge">+63.0% (R$ 34,64)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Fortuna Sunglasses</div>
+                    <h3 class="product-title" title="Óculos de Sol Hexagonal Feminino Clássico Retrô Vintage Aviador Moda Vintage Oldstyle uv400">Óculos de Sol Hexagonal Feminino Clássico Retrô Vintage Aviador Moda Vintage Oldstyle uv400</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.8</div>
+                      <div>🛍️ 26+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 54.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1gHQMTm7Ee" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🚗 Automotivo, Pneus & Acessórios
+🔥 *Óculos de Sol Hexagonal Feminino Clássico Retrô Vintage Aviador Moda Vintage Oldstyle uv400*
+
+⭐ 4.8 | 🛍️ 26+ vendidos
+
+💰 *R$ 54,99*
+
+📉 *45% OFF*
+
+💸 Comissão Estimada: R$ 34,64 (63.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1gHQMTm7Ee</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-m6ctlvemuy7m64" alt="Óculos de Sol Catar Redondo Premium Blogueira Oldstyle Retrô Clássico uv400 Unissex" loading="lazy">
+                    <div class="discount-badge">-40%</div>
+                    <div class="commission-badge">+63.0% (R$ 37,79)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Fortuna Sunglasses</div>
+                    <h3 class="product-title" title="Óculos de Sol Catar Redondo Premium Blogueira Oldstyle Retrô Clássico uv400 Unissex">Óculos de Sol Catar Redondo Premium Blogueira Oldstyle Retrô Clássico uv400 Unissex</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 59.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1qaqYmlTth" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🚗 Automotivo, Pneus & Acessórios
+🔥 *Óculos de Sol Catar Redondo Premium Blogueira Oldstyle Retrô Clássico uv400 Unissex*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 59,99*
+
+📉 *40% OFF*
+
+💸 Comissão Estimada: R$ 37,79 (63.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1qaqYmlTth</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mh3yp34lqf40eb" alt="Pares Trava de silicone com gancho para óculos infantil (multicolorido)" loading="lazy">
+                    <div class="discount-badge">-34%</div>
+                    <div class="commission-badge">+57.0% (R$ 5,63)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Fire Horse</div>
+                    <h3 class="product-title" title="Pares Trava de silicone com gancho para óculos infantil (multicolorido)">Pares Trava de silicone com gancho para óculos infantil (multicolorido)</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 24.88</div>
+                        <div class="price-current">R$ 9.88</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1LeZxrnNuc" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🚗 Automotivo, Pneus & Acessórios
+🔥 *Pares Trava de silicone com gancho para óculos infantil (multicolorido)*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 ~~R$ 24,88~~ por *R$ 9,88*
+📉 *34% OFF*
+
+💸 Comissão Estimada: R$ 5,63 (57.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1LeZxrnNuc</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820lg-mmao57yunfgg0d" alt="Óculos de Sol Capri Feminino Quadrado Grande Premium Clássico Blogueira Com Case uv400" loading="lazy">
+                    <div class="discount-badge">-43%</div>
+                    <div class="commission-badge">+53.0% (R$ 30,20)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Fortuna Sunglasses</div>
+                    <h3 class="product-title" title="Óculos de Sol Capri Feminino Quadrado Grande Premium Clássico Blogueira Com Case uv400">Óculos de Sol Capri Feminino Quadrado Grande Premium Clássico Blogueira Com Case uv400</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 165+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 57.99</div>
+                        <div class="price-current">R$ 56.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1Vy0AAmkZf" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🚗 Automotivo, Pneus & Acessórios
+🔥 *Óculos de Sol Capri Feminino Quadrado Grande Premium Clássico Blogueira Com Case uv400*
+
+⭐ 4.9 | 🛍️ 165+ vendidos
+
+💰 ~~R$ 57,99~~ por *R$ 56,99*
+📉 *43% OFF*
+
+💸 Comissão Estimada: R$ 30,20 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1Vy0AAmkZf</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820ln-mn4rvueics8xa9" alt="Oculos de Sol Redondo Premium Flexivel Blogueira Moderno Luxo uv400 Feminino Masculino" loading="lazy">
+                    <div class="discount-badge">-40%</div>
+                    <div class="commission-badge">+53.0% (R$ 31,79)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Fortuna Sunglasses</div>
+                    <h3 class="product-title" title="Oculos de Sol Redondo Premium Flexivel Blogueira Moderno Luxo uv400 Feminino Masculino">Oculos de Sol Redondo Premium Flexivel Blogueira Moderno Luxo uv400 Feminino Masculino</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 88+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 59.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2LX79hjZsq" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🚗 Automotivo, Pneus & Acessórios
+🔥 *Oculos de Sol Redondo Premium Flexivel Blogueira Moderno Luxo uv400 Feminino Masculino*
+
+⭐ 4.9 | 🛍️ 88+ vendidos
+
+💰 *R$ 59,99*
+
+📉 *40% OFF*
+
+💸 Comissão Estimada: R$ 31,79 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2LX79hjZsq</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820li-mmj24i2vs93498" alt="Oculos de Sol Oval Feminino Fino Premium Tendencia Blogueira Virginia Tigre do Momento em Alta uv400" loading="lazy">
+                    <div class="discount-badge">-45%</div>
+                    <div class="commission-badge">+53.0% (R$ 29,14)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Fortuna Sunglasses</div>
+                    <h3 class="product-title" title="Oculos de Sol Oval Feminino Fino Premium Tendencia Blogueira Virginia Tigre do Momento em Alta uv400">Oculos de Sol Oval Feminino Fino Premium Tendencia Blogueira Virginia Tigre do Momento em Alta uv400</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 74+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 54.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2VqXM0iwXt" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🚗 Automotivo, Pneus & Acessórios
+🔥 *Oculos de Sol Oval Feminino Fino Premium Tendencia Blogueira Virginia Tigre do Momento em Alta uv400*
+
+⭐ 4.9 | 🛍️ 74+ vendidos
+
+💰 *R$ 54,99*
+
+📉 *45% OFF*
+
+💸 Comissão Estimada: R$ 29,14 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2VqXM0iwXt</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820lt-mmuhu643ugw4ab" alt="Óculos de Sol Porto Original Hexagonal Premium Oldstyle Retrô Classico uv400 Feminino Masculino" loading="lazy">
+                    <div class="discount-badge">-50%</div>
+                    <div class="commission-badge">+53.0% (R$ 26,49)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Fortuna Sunglasses</div>
+                    <h3 class="product-title" title="Óculos de Sol Porto Original Hexagonal Premium Oldstyle Retrô Classico uv400 Feminino Masculino">Óculos de Sol Porto Original Hexagonal Premium Oldstyle Retrô Classico uv400 Feminino Masculino</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.7</div>
+                      <div>🛍️ 52+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 59.99</div>
+                        <div class="price-current">R$ 49.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/20uGl5kqYo" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🚗 Automotivo, Pneus & Acessórios
+🔥 *Óculos de Sol Porto Original Hexagonal Premium Oldstyle Retrô Classico uv400 Feminino Masculino*
+
+⭐ 4.7 | 🛍️ 52+ vendidos
+
+💰 ~~R$ 59,99~~ por *R$ 49,99*
+📉 *50% OFF*
+
+💸 Comissão Estimada: R$ 26,49 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/20uGl5kqYo</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820mf-mn5w0chbbvnk63" alt="Óculos de Sol Espotivo Premium Edição Limitada Baixa Pace Ciclismo Corrida VerãoTendencia uv400" loading="lazy">
+                    <div class="discount-badge">-70%</div>
+                    <div class="commission-badge">+53.0% (R$ 31,79)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Fortuna Sunglasses</div>
+                    <h3 class="product-title" title="Óculos de Sol Espotivo Premium Edição Limitada Baixa Pace Ciclismo Corrida VerãoTendencia uv400">Óculos de Sol Espotivo Premium Edição Limitada Baixa Pace Ciclismo Corrida VerãoTendencia uv400</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 83+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 69.99</div>
+                        <div class="price-current">R$ 59.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2BDgxOkDDr" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🚗 Automotivo, Pneus & Acessórios
+🔥 *Óculos de Sol Espotivo Premium Edição Limitada Baixa Pace Ciclismo Corrida VerãoTendencia uv400*
+
+⭐ 5.0 | 🛍️ 83+ vendidos
+
+💰 ~~R$ 69,99~~ por *R$ 59,99*
+📉 *70% OFF*
+
+💸 Comissão Estimada: R$ 31,79 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2BDgxOkDDr</div>
+                  </div>
+                </div>
+              
+          </div>
+        </div>
+      
+        <div id="tab-content-1" class="tab-content ">
+          <div class="grid">
+            
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820m2-mo66zrlk26825c" alt="Tag Redonda Personalizada Frente e Verso Alta Qualidade para Lembrancinhas Brindes e Produtos" loading="lazy">
+                    <div class="discount-badge">-17%</div>
+                    <div class="commission-badge">+83.0% (R$ 48,15)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 DiariodeumaMãe</div>
+                    <h3 class="product-title" title="Tag Redonda Personalizada Frente e Verso Alta Qualidade para Lembrancinhas Brindes e Produtos">Tag Redonda Personalizada Frente e Verso Alta Qualidade para Lembrancinhas Brindes e Produtos</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 82.08</div>
+                        <div class="price-current">R$ 58.01</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1Vy0AB05Vb" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🖥️ PC Gamer, Hardware & Monitores
+🔥 *Tag Redonda Personalizada Frente e Verso Alta Qualidade para Lembrancinhas Brindes e Produtos*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 ~~R$ 82,08~~ por *R$ 58,01*
+📉 *17% OFF*
+
+💸 Comissão Estimada: R$ 48,15 (83.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1Vy0AB05Vb</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81ztc-mk3w9wqngcu91f" alt="ADESIVOS COPA DO MUNDO BRASIL - AUTO COLANTE – CARTELA" loading="lazy">
+                    
+                    <div class="commission-badge">+73.0% (R$ 7,67)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Gid - Soluções em Adesivos</div>
+                    <h3 class="product-title" title="ADESIVOS COPA DO MUNDO BRASIL - AUTO COLANTE – CARTELA">ADESIVOS COPA DO MUNDO BRASIL - AUTO COLANTE – CARTELA</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.6</div>
+                      <div>🛍️ 26+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 10.50</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2LX79hwuom" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🖥️ PC Gamer, Hardware & Monitores
+🔥 *ADESIVOS COPA DO MUNDO BRASIL - AUTO COLANTE – CARTELA*
+
+⭐ 4.6 | 🛍️ 26+ vendidos
+
+💰 *R$ 10,50*
+
+💸 Comissão Estimada: R$ 7,67 (73.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2LX79hwuom</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81ztc-mk2k7dpxx9mqe0" alt="Patinhas Adesivas Páscoa Caça aos Ovos" loading="lazy">
+                    
+                    <div class="commission-badge">+73.0% (R$ 8,02)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Gid - Soluções em Adesivos</div>
+                    <h3 class="product-title" title="Patinhas Adesivas Páscoa Caça aos Ovos">Patinhas Adesivas Páscoa Caça aos Ovos</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 10.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2VqXM0wHTp" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🖥️ PC Gamer, Hardware & Monitores
+🔥 *Patinhas Adesivas Páscoa Caça aos Ovos*
+
+⭐ 4.9 | 🛍️ 0+ vendidos
+
+💰 *R$ 10,99*
+
+💸 Comissão Estimada: R$ 8,02 (73.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2VqXM0wHTp</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mhhrqom630nac9" alt="Rótulos adesivos para tubetes de 13 cm Personalizados Homem Aranha e Aranha Cute" loading="lazy">
+                    
+                    <div class="commission-badge">+68.0% (R$ 13,53)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 ACX Mimos Personalizados</div>
+                    <h3 class="product-title" title="Rótulos adesivos para tubetes de 13 cm Personalizados Homem Aranha e Aranha Cute">Rótulos adesivos para tubetes de 13 cm Personalizados Homem Aranha e Aranha Cute</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 8+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 39.90</div>
+                        <div class="price-current">R$ 19.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/20uGl5yBUk" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🖥️ PC Gamer, Hardware & Monitores
+🔥 *Rótulos adesivos para tubetes de 13 cm Personalizados Homem Aranha e Aranha Cute*
+
+⭐ 5.0 | 🛍️ 8+ vendidos
+
+💰 *R$ 19,90*
+
+💸 Comissão Estimada: R$ 13,53 (68.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/20uGl5yBUk</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7qukw-lfird7jocq0r2e" alt="30 Adesivos de Mini Tubete 8cm Personalizado Peppa Pig" loading="lazy">
+                    
+                    <div class="commission-badge">+68.0% (R$ 13,53)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 ACX Mimos Personalizados</div>
+                    <h3 class="product-title" title="30 Adesivos de Mini Tubete 8cm Personalizado Peppa Pig">30 Adesivos de Mini Tubete 8cm Personalizado Peppa Pig</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 5+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 29.90</div>
+                        <div class="price-current">R$ 19.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2BDgxOxY9n" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🖥️ PC Gamer, Hardware & Monitores
+🔥 *30 Adesivos de Mini Tubete 8cm Personalizado Peppa Pig*
+
+⭐ 4.9 | 🛍️ 5+ vendidos
+
+💰 *R$ 19,90*
+
+💸 Comissão Estimada: R$ 13,53 (68.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2BDgxOxY9n</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mg1banh5nxtw6b" alt="Rótulos Adesivos Personalizadas para Garrafinhas de 50ml Verde Oliva e Azul" loading="lazy">
+                    
+                    <div class="commission-badge">+68.0% (R$ 13,53)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 ACX Mimos Personalizados</div>
+                    <h3 class="product-title" title="Rótulos Adesivos Personalizadas para Garrafinhas de 50ml Verde Oliva e Azul">Rótulos Adesivos Personalizadas para Garrafinhas de 50ml Verde Oliva e Azul</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 49.90</div>
+                        <div class="price-current">R$ 19.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/30mnwvuNSy" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🖥️ PC Gamer, Hardware & Monitores
+🔥 *Rótulos Adesivos Personalizadas para Garrafinhas de 50ml Verde Oliva e Azul*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 19,90*
+
+💸 Comissão Estimada: R$ 13,53 (68.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/30mnwvuNSy</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7qukw-lj03hvki9e4072" alt="Rótulos Adesivos Personalizados Fazendinha Aquarelada ou Arte sua arte pronta - Para Tubetes de 13 cm" loading="lazy">
+                    
+                    <div class="commission-badge">+68.0% (R$ 13,53)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 ACX Mimos Personalizados</div>
+                    <h3 class="product-title" title="Rótulos Adesivos Personalizados Fazendinha Aquarelada ou Arte sua arte pronta - Para Tubetes de 13 cm">Rótulos Adesivos Personalizados Fazendinha Aquarelada ou Arte sua arte pronta - Para Tubetes de 13 cm</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 49.90</div>
+                        <div class="price-current">R$ 19.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/3B6E9Etk81" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🖥️ PC Gamer, Hardware & Monitores
+🔥 *Rótulos Adesivos Personalizados Fazendinha Aquarelada ou Arte sua arte pronta - Para Tubetes de 13 cm*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 19,90*
+
+💸 Comissão Estimada: R$ 13,53 (68.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/3B6E9Etk81</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7qukw-lfrggg9h4zly8a" alt="Rótulos Adesivos Redondos Personalizados Bailarina Aquarelada" loading="lazy">
+                    
+                    <div class="commission-badge">+68.0% (R$ 13,53)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 ACX Mimos Personalizados</div>
+                    <h3 class="product-title" title="Rótulos Adesivos Redondos Personalizados Bailarina Aquarelada">Rótulos Adesivos Redondos Personalizados Bailarina Aquarelada</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 19.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2g9xYJve8w" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🖥️ PC Gamer, Hardware & Monitores
+🔥 *Rótulos Adesivos Redondos Personalizados Bailarina Aquarelada*
+
+⭐ 4.9 | 🛍️ 0+ vendidos
+
+💰 *R$ 19,90*
+
+💸 Comissão Estimada: R$ 13,53 (68.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2g9xYJve8w</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820ly-ml6k66sowgli24" alt="Adesivos Personalizados Bolofofos - Circo rosa - Jardim - Magali - Moana - Indicados para Copo Long Drink" loading="lazy">
+                    
+                    <div class="commission-badge">+68.0% (R$ 13,53)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 ACX Mimos Personalizados</div>
+                    <h3 class="product-title" title="Adesivos Personalizados Bolofofos - Circo rosa - Jardim - Magali - Moana - Indicados para Copo Long Drink">Adesivos Personalizados Bolofofos - Circo rosa - Jardim - Magali - Moana - Indicados para Copo Long Drink</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 59.90</div>
+                        <div class="price-current">R$ 19.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2qTNkcv0nz" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🖥️ PC Gamer, Hardware & Monitores
+🔥 *Adesivos Personalizados Bolofofos - Circo rosa - Jardim - Magali - Moana - Indicados para Copo Long Drink*
+
+⭐ 4.9 | 🛍️ 0+ vendidos
+
+💰 *R$ 19,90*
+
+💸 Comissão Estimada: R$ 13,53 (68.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2qTNkcv0nz</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134201-23030-5vnrjq7608nva7" alt="Adesivos Redondos Personalizados Mundo bita" loading="lazy">
+                    
+                    <div class="commission-badge">+68.0% (R$ 13,53)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 ACX Mimos Personalizados</div>
+                    <h3 class="product-title" title="Adesivos Redondos Personalizados Mundo bita">Adesivos Redondos Personalizados Mundo bita</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 19.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/3g2Uk9rq7A" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🖥️ PC Gamer, Hardware & Monitores
+🔥 *Adesivos Redondos Personalizados Mundo bita*
+
+⭐ 4.9 | 🛍️ 0+ vendidos
+
+💰 *R$ 19,90*
+
+💸 Comissão Estimada: R$ 13,53 (68.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/3g2Uk9rq7A</div>
+                  </div>
+                </div>
+              
+          </div>
+        </div>
+      
+        <div id="tab-content-2" class="tab-content ">
+          <div class="grid">
+            
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-m6belisoewlh6c" alt="organizadores em TNT para mala 5 peças" loading="lazy">
+                    
+                    <div class="commission-badge">+71.0% (R$ 35,43)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Márcia Cardoso de Oliveira lima</div>
+                    <h3 class="product-title" title="organizadores em TNT para mala 5 peças">organizadores em TNT para mala 5 peças</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.5</div>
+                      <div>🛍️ 1+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 49.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/Lm2m2M7wz" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎮 Videogames, Consoles & Jogos
+🔥 *organizadores em TNT para mala 5 peças*
+
+⭐ 4.5 | 🛍️ 1+ vendidos
+
+💰 *R$ 49,90*
+
+💸 Comissão Estimada: R$ 35,43 (71.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/Lm2m2M7wz</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81ztc-mkcqwaw20w02d9" alt="Kit Higiene Completo para Viagem 5 Peças com Necessaire" loading="lazy">
+                    <div class="discount-badge">-42%</div>
+                    <div class="commission-badge">+53.0% (R$ 15,37)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 ShopUtilidadesloja</div>
+                    <h3 class="product-title" title="Kit Higiene Completo para Viagem 5 Peças com Necessaire">Kit Higiene Completo para Viagem 5 Peças com Necessaire</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 29.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/BScZjMlHy" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎮 Videogames, Consoles & Jogos
+🔥 *Kit Higiene Completo para Viagem 5 Peças com Necessaire*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 29,00*
+
+📉 *42% OFF*
+
+💸 Comissão Estimada: R$ 15,37 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/BScZjMlHy</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81ztc-mk45pil94yde68" alt="Kit Frascos Viagem 10 Peças com Necessaire | Pump, Spray e Potes" loading="lazy">
+                    <div class="discount-badge">-42%</div>
+                    <div class="commission-badge">+53.0% (R$ 15,37)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 ShopUtilidadesloja</div>
+                    <h3 class="product-title" title="Kit Frascos Viagem 10 Peças com Necessaire | Pump, Spray e Potes">Kit Frascos Viagem 10 Peças com Necessaire | Pump, Spray e Potes</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 29.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/19CNQNOcx" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎮 Videogames, Consoles & Jogos
+🔥 *Kit Frascos Viagem 10 Peças com Necessaire | Pump, Spray e Potes*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 29,00*
+
+📉 *42% OFF*
+
+💸 Comissão Estimada: R$ 15,37 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/19CNQNOcx</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-m86bhghnww7l05" alt="Kit 10 Embalagem 15cm  x 15cm Saco Organizador Multiuso" loading="lazy">
+                    <div class="discount-badge">-10%</div>
+                    <div class="commission-badge">+43.0% (R$ 10,44)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Isaplastic</div>
+                    <h3 class="product-title" title="Kit 10 Embalagem 15cm  x 15cm Saco Organizador Multiuso">Kit 10 Embalagem 15cm  x 15cm Saco Organizador Multiuso</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.7</div>
+                      <div>🛍️ 174+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 26.99</div>
+                        <div class="price-current">R$ 24.29</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2VqXM1DsYS" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎮 Videogames, Consoles & Jogos
+🔥 *Kit 10 Embalagem 15cm  x 15cm Saco Organizador Multiuso*
+
+⭐ 4.7 | 🛍️ 174+ vendidos
+
+💰 ~~R$ 26,99~~ por *R$ 24,29*
+📉 *10% OFF*
+
+💸 Comissão Estimada: R$ 10,44 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2VqXM1DsYS</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-m86bo8povhg1f7" alt="Saquinho para Lembrançinhas Bolsas Malas Zíper" loading="lazy">
+                    <div class="discount-badge">-10%</div>
+                    <div class="commission-badge">+43.0% (R$ 3,44)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Isaplastic</div>
+                    <h3 class="product-title" title="Saquinho para Lembrançinhas Bolsas Malas Zíper">Saquinho para Lembrançinhas Bolsas Malas Zíper</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.7</div>
+                      <div>🛍️ 127+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 35.00</div>
+                        <div class="price-current">R$ 7.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2LX79iEVtR" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎮 Videogames, Consoles & Jogos
+🔥 *Saquinho para Lembrançinhas Bolsas Malas Zíper*
+
+⭐ 4.7 | 🛍️ 127+ vendidos
+
+💰 ~~R$ 35,00~~ por *R$ 7,99*
+📉 *10% OFF*
+
+💸 Comissão Estimada: R$ 3,44 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2LX79iEVtR</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/077bb07891ac8a723435b72b435e2f5a" alt="Estojo Necessaire Pvc Transparente Tam P e M Com Zíper" loading="lazy">
+                    <div class="discount-badge">-10%</div>
+                    <div class="commission-badge">+43.0% (R$ 3,68)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Isaplastic</div>
+                    <h3 class="product-title" title="Estojo Necessaire Pvc Transparente Tam P e M Com Zíper">Estojo Necessaire Pvc Transparente Tam P e M Com Zíper</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.5</div>
+                      <div>🛍️ 5+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 10.35</div>
+                        <div class="price-current">R$ 8.55</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2BDgxPF9EQ" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎮 Videogames, Consoles & Jogos
+🔥 *Estojo Necessaire Pvc Transparente Tam P e M Com Zíper*
+
+⭐ 4.5 | 🛍️ 5+ vendidos
+
+💰 ~~R$ 10,35~~ por *R$ 8,55*
+📉 *10% OFF*
+
+💸 Comissão Estimada: R$ 3,68 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2BDgxPF9EQ</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/58382d8382a1f69efc882e357ba6c14c" alt="Kit Com 5 Organizadores De Mala Para Viagem" loading="lazy">
+                    <div class="discount-badge">-10%</div>
+                    <div class="commission-badge">+43.0% (R$ 12,77)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Isaplastic</div>
+                    <h3 class="product-title" title="Kit Com 5 Organizadores De Mala Para Viagem">Kit Com 5 Organizadores De Mala Para Viagem</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.8</div>
+                      <div>🛍️ 2+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 29.70</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/20uGl6FmZP" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎮 Videogames, Consoles & Jogos
+🔥 *Kit Com 5 Organizadores De Mala Para Viagem*
+
+⭐ 4.8 | 🛍️ 2+ vendidos
+
+💰 *R$ 29,70*
+
+📉 *10% OFF*
+
+💸 Comissão Estimada: R$ 12,77 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/20uGl6FmZP</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/06d61ecebdeb4d98d55f136d9e9e2e3c" alt="5 Saquinho Organizador Para Bolsa Mala De Viagem Com Zíper" loading="lazy">
+                    <div class="discount-badge">-10%</div>
+                    <div class="commission-badge">+43.0% (R$ 8,51)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Isaplastic</div>
+                    <h3 class="product-title" title="5 Saquinho Organizador Para Bolsa Mala De Viagem Com Zíper">5 Saquinho Organizador Para Bolsa Mala De Viagem Com Zíper</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.6</div>
+                      <div>🛍️ 2+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 19.80</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1qaqYnGPuO" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎮 Videogames, Consoles & Jogos
+🔥 *5 Saquinho Organizador Para Bolsa Mala De Viagem Com Zíper*
+
+⭐ 4.6 | 🛍️ 2+ vendidos
+
+💰 *R$ 19,80*
+
+📉 *10% OFF*
+
+💸 Comissão Estimada: R$ 8,51 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1qaqYnGPuO</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-merdpuleudxd8e" alt="Kit 5 Organizador De Mala Para Viagem Necessaire De Pvc" loading="lazy">
+                    <div class="discount-badge">-12%</div>
+                    <div class="commission-badge">+43.0% (R$ 14,38)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Isaplastic</div>
+                    <h3 class="product-title" title="Kit 5 Organizador De Mala Para Viagem Necessaire De Pvc">Kit 5 Organizador De Mala Para Viagem Necessaire De Pvc</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.4</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 33.44</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1gHQMUH3FN" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎮 Videogames, Consoles & Jogos
+🔥 *Kit 5 Organizador De Mala Para Viagem Necessaire De Pvc*
+
+⭐ 4.4 | 🛍️ 0+ vendidos
+
+💰 *R$ 33,44*
+
+📉 *12% OFF*
+
+💸 Comissão Estimada: R$ 14,38 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1gHQMUH3FN</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-meke77wojzsz07" alt="kit 10 Saquinhos Transparentes para Lembrancinhas de Festa/Sacolinha Surpresa Festa" loading="lazy">
+                    <div class="discount-badge">-10%</div>
+                    <div class="commission-badge">+43.0% (R$ 17,03)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Isaplastic</div>
+                    <h3 class="product-title" title="kit 10 Saquinhos Transparentes para Lembrancinhas de Festa/Sacolinha Surpresa Festa">kit 10 Saquinhos Transparentes para Lembrancinhas de Festa/Sacolinha Surpresa Festa</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 39.60</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1Vy0ABHgaM" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎮 Videogames, Consoles & Jogos
+🔥 *kit 10 Saquinhos Transparentes para Lembrancinhas de Festa/Sacolinha Surpresa Festa*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 39,60*
+
+📉 *10% OFF*
+
+💸 Comissão Estimada: R$ 17,03 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1Vy0ABHgaM</div>
+                  </div>
+                </div>
+              
+          </div>
+        </div>
+      
+        <div id="tab-content-3" class="tab-content ">
+          <div class="grid">
+            
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-m9exscsf8a9u48" alt="Modem USB 3 EM 1 4G LTE Roteador 4G Hotspot WiFi móvel com slot para cartão SIM 150 Mbps DL 50 Mbps" loading="lazy">
+                    
+                    <div class="commission-badge">+82.0% (R$ 81,18)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 egneoliveira68</div>
+                    <h3 class="product-title" title="Modem USB 3 EM 1 4G LTE Roteador 4G Hotspot WiFi móvel com slot para cartão SIM 150 Mbps DL 50 Mbps">Modem USB 3 EM 1 4G LTE Roteador 4G Hotspot WiFi móvel com slot para cartão SIM 150 Mbps DL 50 Mbps</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.7</div>
+                      <div>🛍️ 6+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 99.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/6pzWVzARbV" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 📱 Celulares & Acessórios
+🔥 *Modem USB 3 EM 1 4G LTE Roteador 4G Hotspot WiFi móvel com slot para cartão SIM 150 Mbps DL 50 Mbps*
+
+⭐ 4.7 | 🛍️ 6+ vendidos
+
+💰 *R$ 99,00*
+
+💸 Comissão Estimada: R$ 81,18 (82.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/6pzWVzARbV</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134211-81z1k-mf9xd01r07b92e" alt="Cabo USB C para USB C 2m, nylon trançado para recarga Tipo C, adequado para Samsung e Iphone" loading="lazy">
+                    
+                    <div class="commission-badge">+64.0% (R$ 31,99)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 rmbusiness</div>
+                    <h3 class="product-title" title="Cabo USB C para USB C 2m, nylon trançado para recarga Tipo C, adequado para Samsung e Iphone">Cabo USB C para USB C 2m, nylon trançado para recarga Tipo C, adequado para Samsung e Iphone</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 49.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/70IwiI9oGY" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 📱 Celulares & Acessórios
+🔥 *Cabo USB C para USB C 2m, nylon trançado para recarga Tipo C, adequado para Samsung e Iphone*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 49,99*
+
+💸 Comissão Estimada: R$ 31,99 (64.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/70IwiI9oGY</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mgl6kjedt1xcf1" alt="Carregador 35W iPhone 15 Pro Max Turbo Fonte USB-C + Cabo Tipo-C Tipo C de 1M Ou so cabo de 1m" loading="lazy">
+                    <div class="discount-badge">-54%</div>
+                    <div class="commission-badge">+55.0% (R$ 8,24)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 rafa_celltech</div>
+                    <h3 class="product-title" title="Carregador 35W iPhone 15 Pro Max Turbo Fonte USB-C + Cabo Tipo-C Tipo C de 1M Ou so cabo de 1m">Carregador 35W iPhone 15 Pro Max Turbo Fonte USB-C + Cabo Tipo-C Tipo C de 1M Ou so cabo de 1m</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.8</div>
+                      <div>🛍️ 38+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 56.09</div>
+                        <div class="price-current">R$ 14.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/7AcMub9Avb" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 📱 Celulares & Acessórios
+🔥 *Carregador 35W iPhone 15 Pro Max Turbo Fonte USB-C + Cabo Tipo-C Tipo C de 1M Ou so cabo de 1m*
+
+⭐ 4.8 | 🛍️ 38+ vendidos
+
+💰 ~~R$ 56,09~~ por *R$ 14,99*
+📉 *54% OFF*
+
+💸 Comissão Estimada: R$ 8,24 (55.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/7AcMub9Avb</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mfmoyypjbu2ta8" alt="Protetor Espiral ou Organizador de Cabos Vonder 2m - Informática - Gamer - Escritório - Casa" loading="lazy">
+                    
+                    <div class="commission-badge">+53.0% (R$ 14,38)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Konvites Express Design</div>
+                    <h3 class="product-title" title="Protetor Espiral ou Organizador de Cabos Vonder 2m - Informática - Gamer - Escritório - Casa">Protetor Espiral ou Organizador de Cabos Vonder 2m - Informática - Gamer - Escritório - Casa</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 34.06</div>
+                        <div class="price-current">R$ 27.13</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/7Kvn6u8Xae" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 📱 Celulares & Acessórios
+🔥 *Protetor Espiral ou Organizador de Cabos Vonder 2m - Informática - Gamer - Escritório - Casa*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 27,13*
+
+💸 Comissão Estimada: R$ 14,38 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/7Kvn6u8Xae</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-mdksyzd2qchl08" alt="Cabo USB De Carregamento Rapido Revestimento Emborrachado Entradas V8, TIPO-C E I.PHONE IOS" loading="lazy">
+                    
+                    <div class="commission-badge">+53.0% (R$ 6,84)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 PORTA FECHADA.COM</div>
+                    <h3 class="product-title" title="Cabo USB De Carregamento Rapido Revestimento Emborrachado Entradas V8, TIPO-C E I.PHONE IOS">Cabo USB De Carregamento Rapido Revestimento Emborrachado Entradas V8, TIPO-C E I.PHONE IOS</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 19+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 30.00</div>
+                        <div class="price-current">R$ 12.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/7VFDJD7uFh" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 📱 Celulares & Acessórios
+🔥 *Cabo USB De Carregamento Rapido Revestimento Emborrachado Entradas V8, TIPO-C E I.PHONE IOS*
+
+⭐ 4.9 | 🛍️ 19+ vendidos
+
+💰 *R$ 12,90*
+
+💸 Comissão Estimada: R$ 6,84 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/7VFDJD7uFh</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-lv20n0l8t7l593" alt="Capa de Celular com Suporte Para Cinto 5.0 /6.5/ e 6.8 Polegadas Modelos Variados Suporte Para Celular" loading="lazy">
+                    
+                    <div class="commission-badge">+53.0% (R$ 17,44)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 PORTA FECHADA.COM</div>
+                    <h3 class="product-title" title="Capa de Celular com Suporte Para Cinto 5.0 /6.5/ e 6.8 Polegadas Modelos Variados Suporte Para Celular">Capa de Celular com Suporte Para Cinto 5.0 /6.5/ e 6.8 Polegadas Modelos Variados Suporte Para Celular</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 18+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 32.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/7fYdVW7Guk" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 📱 Celulares & Acessórios
+🔥 *Capa de Celular com Suporte Para Cinto 5.0 /6.5/ e 6.8 Polegadas Modelos Variados Suporte Para Celular*
+
+⭐ 4.9 | 🛍️ 18+ vendidos
+
+💰 *R$ 32,90*
+
+💸 Comissão Estimada: R$ 17,44 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/7fYdVW7Guk</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-mchuap548rup27" alt="Capa Silicone Para Infinix Hot 50i" loading="lazy">
+                    
+                    <div class="commission-badge">+53.0% (R$ 13,73)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 PORTA FECHADA.COM</div>
+                    <h3 class="product-title" title="Capa Silicone Para Infinix Hot 50i">Capa Silicone Para Infinix Hot 50i</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 7+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 25.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/7ps3hp6dZn" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 📱 Celulares & Acessórios
+🔥 *Capa Silicone Para Infinix Hot 50i*
+
+⭐ 5.0 | 🛍️ 7+ vendidos
+
+💰 *R$ 25,90*
+
+💸 Comissão Estimada: R$ 13,73 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/7ps3hp6dZn</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mfyg6fc7g4xsba" alt="Película Para Câmera Do Redmi 15C" loading="lazy">
+                    
+                    <div class="commission-badge">+53.0% (R$ 8,47)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 PORTA FECHADA.COM</div>
+                    <h3 class="product-title" title="Película Para Câmera Do Redmi 15C">Película Para Câmera Do Redmi 15C</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.8</div>
+                      <div>🛍️ 6+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 15.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/5LAijEG9eK" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 📱 Celulares & Acessórios
+🔥 *Película Para Câmera Do Redmi 15C*
+
+⭐ 4.8 | 🛍️ 6+ vendidos
+
+💰 *R$ 15,99*
+
+💸 Comissão Estimada: R$ 8,47 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/5LAijEG9eK</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mh6mqq1b7hmv48" alt="Película De Vidro 3D Privativa Para Pc X7 Pro Com Furo Para Digital" loading="lazy">
+                    
+                    <div class="commission-badge">+53.0% (R$ 10,02)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 PORTA FECHADA.COM</div>
+                    <h3 class="product-title" title="Película De Vidro 3D Privativa Para Pc X7 Pro Com Furo Para Digital">Película De Vidro 3D Privativa Para Pc X7 Pro Com Furo Para Digital</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 10+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 18.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/5VU8vXFWJN" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 📱 Celulares & Acessórios
+🔥 *Película De Vidro 3D Privativa Para Pc X7 Pro Com Furo Para Digital*
+
+⭐ 4.9 | 🛍️ 10+ vendidos
+
+💰 *R$ 18,90*
+
+💸 Comissão Estimada: R$ 10,02 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/5VU8vXFWJN</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mididn6vnv2eb8" alt="Capa Com Proteção De Cãmera Silicone Para Smart 10" loading="lazy">
+                    
+                    <div class="commission-badge">+53.0% (R$ 13,20)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 PORTA FECHADA.COM</div>
+                    <h3 class="product-title" title="Capa Com Proteção De Cãmera Silicone Para Smart 10">Capa Com Proteção De Cãmera Silicone Para Smart 10</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 7+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 24.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/5fnZ7qEsyQ" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 📱 Celulares & Acessórios
+🔥 *Capa Com Proteção De Cãmera Silicone Para Smart 10*
+
+⭐ 4.9 | 🛍️ 7+ vendidos
+
+💰 *R$ 24,90*
+
+💸 Comissão Estimada: R$ 13,20 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/5fnZ7qEsyQ</div>
+                  </div>
+                </div>
+              
+          </div>
+        </div>
+      
+        <div id="tab-content-4" class="tab-content ">
+          <div class="grid">
+            
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-ma0685kq26gp7a" alt="Cueca Boxer Masculina Algodão Nawes Confortável e Resistente com Elástico Largo" loading="lazy">
+                    
+                    <div class="commission-badge">+83.0% (R$ 16,59)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 MALUKA MODAS</div>
+                    <h3 class="product-title" title="Cueca Boxer Masculina Algodão Nawes Confortável e Resistente com Elástico Largo">Cueca Boxer Masculina Algodão Nawes Confortável e Resistente com Elástico Largo</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 17+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 19.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1BL9lZjDQO" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🏠 Eletrodomésticos Grandes & Lavadoras
+🔥 *Cueca Boxer Masculina Algodão Nawes Confortável e Resistente com Elástico Largo*
+
+⭐ 5.0 | 🛍️ 17+ vendidos
+
+💰 *R$ 19,99*
+
+💸 Comissão Estimada: R$ 16,59 (83.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1BL9lZjDQO</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7qukw-lhzdkxgi3c4d61" alt="Cuecas boxer kit com 5 cuecas sortidas" loading="lazy">
+                    
+                    <div class="commission-badge">+68.0% (R$ 67,93)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 MAURICIO VARIEDADES</div>
+                    <h3 class="product-title" title="Cuecas boxer kit com 5 cuecas sortidas">Cuecas boxer kit com 5 cuecas sortidas</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 99.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/111jZGjqlN" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🏠 Eletrodomésticos Grandes & Lavadoras
+🔥 *Cuecas boxer kit com 5 cuecas sortidas*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 99,90*
+
+💸 Comissão Estimada: R$ 67,93 (68.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/111jZGjqlN</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-m8uenc7ayrv517" alt="1 Cueca Boxer Média/Longa Masculina Moda Masculina Calcinhas Boxer Confortáveis" loading="lazy">
+                    
+                    <div class="commission-badge">+50.0% (R$ 25,00)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 MAURICIO VARIEDADES</div>
+                    <h3 class="product-title" title="1 Cueca Boxer Média/Longa Masculina Moda Masculina Calcinhas Boxer Confortáveis">1 Cueca Boxer Média/Longa Masculina Moda Masculina Calcinhas Boxer Confortáveis</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 50.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/qiJMxkU6M" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🏠 Eletrodomésticos Grandes & Lavadoras
+🔥 *1 Cueca Boxer Média/Longa Masculina Moda Masculina Calcinhas Boxer Confortáveis*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 50,00*
+
+💸 Comissão Estimada: R$ 25,00 (50.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/qiJMxkU6M</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-ma3zwwnu3eplf6" alt="Cueca boxer comprida GlareBan cor aleatória 1 unidade" loading="lazy">
+                    
+                    <div class="commission-badge">+47.0% (R$ 28,15)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 MAURICIO VARIEDADES</div>
+                    <h3 class="product-title" title="Cueca boxer comprida GlareBan cor aleatória 1 unidade">Cueca boxer comprida GlareBan cor aleatória 1 unidade</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 59.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/gOtAel7RL" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🏠 Eletrodomésticos Grandes & Lavadoras
+🔥 *Cueca boxer comprida GlareBan cor aleatória 1 unidade*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 59,90*
+
+💸 Comissão Estimada: R$ 28,15 (47.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/gOtAel7RL</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820ln-mohb668o9q0z4e" alt="Kit 10 Cuecas Boxer Hering Em Algodão Box Adulto Original" loading="lazy">
+                    <div class="discount-badge">-30%</div>
+                    <div class="commission-badge">+43.0% (R$ 59,77)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 ZAYRON OFICIAL</div>
+                    <h3 class="product-title" title="Kit 10 Cuecas Boxer Hering Em Algodão Box Adulto Original">Kit 10 Cuecas Boxer Hering Em Algodão Box Adulto Original</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.5</div>
+                      <div>🛍️ 177+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 179.90</div>
+                        <div class="price-current">R$ 139.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/W5SyLlkmK" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🏠 Eletrodomésticos Grandes & Lavadoras
+🔥 *Kit 10 Cuecas Boxer Hering Em Algodão Box Adulto Original*
+
+⭐ 4.5 | 🛍️ 177+ vendidos
+
+💰 ~~R$ 179,90~~ por *R$ 139,00*
+📉 *30% OFF*
+
+💸 Comissão Estimada: R$ 59,77 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/W5SyLlkmK</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820m8-mq3dpfs9bk76c4" alt="Kit Com 10 Cuecas Boxer Zorba Algodão Masculina Original" loading="lazy">
+                    <div class="discount-badge">-40%</div>
+                    <div class="commission-badge">+43.0% (R$ 59,73)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 ZAYRON OFICIAL</div>
+                    <h3 class="product-title" title="Kit Com 10 Cuecas Boxer Zorba Algodão Masculina Original">Kit Com 10 Cuecas Boxer Zorba Algodão Masculina Original</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.5</div>
+                      <div>🛍️ 70+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 138.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/Lm2m2mO7J" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🏠 Eletrodomésticos Grandes & Lavadoras
+🔥 *Kit Com 10 Cuecas Boxer Zorba Algodão Masculina Original*
+
+⭐ 4.5 | 🛍️ 70+ vendidos
+
+💰 *R$ 138,90*
+
+📉 *40% OFF*
+
+💸 Comissão Estimada: R$ 59,73 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/Lm2m2mO7J</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-lu6en111p7c04d" alt="Kit 3 Cuecas Boxer Microfibra Cueca Box Sem Costura RP Masculino Adulto Envio Imediato" loading="lazy">
+                    <div class="discount-badge">-39%</div>
+                    <div class="commission-badge">+43.0% (R$ 13,28)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 MagazineShop10</div>
+                    <h3 class="product-title" title="Kit 3 Cuecas Boxer Microfibra Cueca Box Sem Costura RP Masculino Adulto Envio Imediato">Kit 3 Cuecas Boxer Microfibra Cueca Box Sem Costura RP Masculino Adulto Envio Imediato</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.8</div>
+                      <div>🛍️ 17+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 32.79</div>
+                        <div class="price-current">R$ 30.89</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/BScZjn1SI" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🏠 Eletrodomésticos Grandes & Lavadoras
+🔥 *Kit 3 Cuecas Boxer Microfibra Cueca Box Sem Costura RP Masculino Adulto Envio Imediato*
+
+⭐ 4.8 | 🛍️ 17+ vendidos
+
+💰 ~~R$ 32,79~~ por *R$ 30,89*
+📉 *39% OFF*
+
+💸 Comissão Estimada: R$ 13,28 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/BScZjn1SI</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-lvkjpvt8y18pa9" alt="Kit 4 Cueca Boxer Masculino Microfibra Sem Costura Adulto Box Elastano" loading="lazy">
+                    <div class="discount-badge">-40%</div>
+                    <div class="commission-badge">+43.0% (R$ 18,04)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 MagazineShop10</div>
+                    <h3 class="product-title" title="Kit 4 Cueca Boxer Masculino Microfibra Sem Costura Adulto Box Elastano">Kit 4 Cueca Boxer Masculino Microfibra Sem Costura Adulto Box Elastano</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.8</div>
+                      <div>🛍️ 11+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 41.96</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/19CNQnenH" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🏠 Eletrodomésticos Grandes & Lavadoras
+🔥 *Kit 4 Cueca Boxer Masculino Microfibra Sem Costura Adulto Box Elastano*
+
+⭐ 4.8 | 🛍️ 11+ vendidos
+
+💰 *R$ 41,96*
+
+📉 *40% OFF*
+
+💸 Comissão Estimada: R$ 18,04 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/19CNQnenH</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-mdc1b498jzlt11" alt="Cinta Modeladora Faixa Masculina Miracle Belt" loading="lazy">
+                    <div class="discount-badge">-7%</div>
+                    <div class="commission-badge">+43.0% (R$ 113,93)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Cintas Miracle Belt </div>
+                    <h3 class="product-title" title="Cinta Modeladora Faixa Masculina Miracle Belt">Cinta Modeladora Faixa Masculina Miracle Belt</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 1+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 264.96</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2VqXM1e8im" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+⚡ Médio Ticket / Destaque • 🏠 Eletrodomésticos Grandes & Lavadoras
+🔥 *Cinta Modeladora Faixa Masculina Miracle Belt*
+
+⭐ 5.0 | 🛍️ 1+ vendidos
+
+💰 *R$ 264,96*
+
+📉 *7% OFF*
+
+💸 Comissão Estimada: R$ 113,93 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2VqXM1e8im</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-m9u83ujwgzr693" alt="Kit com 5 Cuecas Boxer Masculinas Korper Cores Sortidas Conforto Premium" loading="lazy">
+                    <div class="discount-badge">-32%</div>
+                    <div class="commission-badge">+43.0% (R$ 19,31)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 MagazineShop10</div>
+                    <h3 class="product-title" title="Kit com 5 Cuecas Boxer Masculinas Korper Cores Sortidas Conforto Premium">Kit com 5 Cuecas Boxer Masculinas Korper Cores Sortidas Conforto Premium</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 44.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2LX79iem3l" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🏠 Eletrodomésticos Grandes & Lavadoras
+🔥 *Kit com 5 Cuecas Boxer Masculinas Korper Cores Sortidas Conforto Premium*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 44,90*
+
+📉 *32% OFF*
+
+💸 Comissão Estimada: R$ 19,31 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2LX79iem3l</div>
+                  </div>
+                </div>
+              
+          </div>
+        </div>
+      
+        <div id="tab-content-5" class="tab-content ">
+          <div class="grid">
+            
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/f7920c4935f3b8d3150fa9a5ae9496d1" alt="RWX VEST Máscara KN95 com clipe nasal com 10 Unid  NON MEDIC" loading="lazy">
+                    
+                    <div class="commission-badge">+57.0% (R$ 9,11)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 RWX Vestuarios</div>
+                    <h3 class="product-title" title="RWX VEST Máscara KN95 com clipe nasal com 10 Unid  NON MEDIC">RWX VEST Máscara KN95 com clipe nasal com 10 Unid  NON MEDIC</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 3+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 15.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/9V0HgtVE9Y" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ☕ Cozinha, Cafeteiras & Café
+🔥 *RWX VEST Máscara KN95 com clipe nasal com 10 Unid  NON MEDIC*
+
+⭐ 4.9 | 🛍️ 3+ vendidos
+
+💰 *R$ 15,99*
+
+💸 Comissão Estimada: R$ 9,11 (57.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/9V0HgtVE9Y</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/8d0d089d81e44ea59c216a408ae5ce0a" alt="RWX VEST Kit 30 UNIDADES MÁSCARA KN95 5 CAMADAS PROTEÇÃO KIT  NON MEDIC" loading="lazy">
+                    
+                    <div class="commission-badge">+57.0% (R$ 34,18)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 RWX Vestuarios</div>
+                    <h3 class="product-title" title="RWX VEST Kit 30 UNIDADES MÁSCARA KN95 5 CAMADAS PROTEÇÃO KIT  NON MEDIC">RWX VEST Kit 30 UNIDADES MÁSCARA KN95 5 CAMADAS PROTEÇÃO KIT  NON MEDIC</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.8</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 59.96</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/9KgrUaVrUX" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ☕ Cozinha, Cafeteiras & Café
+🔥 *RWX VEST Kit 30 UNIDADES MÁSCARA KN95 5 CAMADAS PROTEÇÃO KIT  NON MEDIC*
+
+⭐ 4.8 | 🛍️ 0+ vendidos
+
+💰 *R$ 59,96*
+
+💸 Comissão Estimada: R$ 34,18 (57.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/9KgrUaVrUX</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-maqzcpxni26naf" alt="Abaixador de Língua Madeira Theoto - 100 Unidades - Descartável - Médico - Hospitalar - Clínico" loading="lazy">
+                    
+                    <div class="commission-badge">+53.0% (R$ 12,54)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Konvites Express Design</div>
+                    <h3 class="product-title" title="Abaixador de Língua Madeira Theoto - 100 Unidades - Descartável - Médico - Hospitalar - Clínico">Abaixador de Língua Madeira Theoto - 100 Unidades - Descartável - Médico - Hospitalar - Clínico</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 23.66</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/9pd85VTxTe" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ☕ Cozinha, Cafeteiras & Café
+🔥 *Abaixador de Língua Madeira Theoto - 100 Unidades - Descartável - Médico - Hospitalar - Clínico*
+
+⭐ 4.9 | 🛍️ 0+ vendidos
+
+💰 *R$ 23,66*
+
+💸 Comissão Estimada: R$ 12,54 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/9pd85VTxTe</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-mart48dobdsfbd" alt="Kit 5 Pacotes Abaixador de Língua de Madeira Theoto com 100 Unidades - Uso Médico e Descartável" loading="lazy">
+                    
+                    <div class="commission-badge">+53.0% (R$ 24,81)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Konvites Express Design</div>
+                    <h3 class="product-title" title="Kit 5 Pacotes Abaixador de Língua de Madeira Theoto com 100 Unidades - Uso Médico e Descartável">Kit 5 Pacotes Abaixador de Língua de Madeira Theoto com 100 Unidades - Uso Médico e Descartável</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.7</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 46.82</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/9fJhtCUaod" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ☕ Cozinha, Cafeteiras & Café
+🔥 *Kit 5 Pacotes Abaixador de Língua de Madeira Theoto com 100 Unidades - Uso Médico e Descartável*
+
+⭐ 4.7 | 🛍️ 0+ vendidos
+
+💰 *R$ 46,82*
+
+💸 Comissão Estimada: R$ 24,81 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/9fJhtCUaod</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820lw-mqxn2lmq5a101a" alt="Porta Ampolas 3ml Enfermagem Clínicas e Viagens Porta Peptídeos Organizador BRINDE 4 tampa para ampola" loading="lazy">
+                    <div class="discount-badge">-20%</div>
+                    <div class="commission-badge">+53.0% (R$ 10,13)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 FiveTech3D</div>
+                    <h3 class="product-title" title="Porta Ampolas 3ml Enfermagem Clínicas e Viagens Porta Peptídeos Organizador BRINDE 4 tampa para ampola">Porta Ampolas 3ml Enfermagem Clínicas e Viagens Porta Peptídeos Organizador BRINDE 4 tampa para ampola</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 19.12</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/AAFyU7Sgnk" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ☕ Cozinha, Cafeteiras & Café
+🔥 *Porta Ampolas 3ml Enfermagem Clínicas e Viagens Porta Peptídeos Organizador BRINDE 4 tampa para ampola*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 19,12*
+
+📉 *20% OFF*
+
+💸 Comissão Estimada: R$ 10,13 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/AAFyU7Sgnk</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134201-820lz-mqy6k6lba7lx6d" alt="1000 Microtubo Cônico 0,38ml Interno 0,5ml Externo Dourado Capsula Para Laboratório" loading="lazy">
+                    
+                    <div class="commission-badge">+46.0% (R$ 27,65)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 phitos_lab</div>
+                    <h3 class="product-title" title="1000 Microtubo Cônico 0,38ml Interno 0,5ml Externo Dourado Capsula Para Laboratório">1000 Microtubo Cônico 0,38ml Interno 0,5ml Externo Dourado Capsula Para Laboratório</h3>
+                    <div class="metrics">
+                      <div>⭐ 3.7</div>
+                      <div>🛍️ 1+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 60.10</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/9zwYHoTK8j" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ☕ Cozinha, Cafeteiras & Café
+🔥 *1000 Microtubo Cônico 0,38ml Interno 0,5ml Externo Dourado Capsula Para Laboratório*
+
+⭐ 3.7 | 🛍️ 1+ vendidos
+
+💰 *R$ 60,10*
+
+💸 Comissão Estimada: R$ 27,65 (46.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/9zwYHoTK8j</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820mc-mm1th4nrp05i09" alt="1000 Microtubo Cônico 0,38ml Interno 0,5ml Externo Laranja Capsula Para Laboratório" loading="lazy">
+                    
+                    <div class="commission-badge">+46.0% (R$ 28,00)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 phitos_lab</div>
+                    <h3 class="product-title" title="1000 Microtubo Cônico 0,38ml Interno 0,5ml Externo Laranja Capsula Para Laboratório">1000 Microtubo Cônico 0,38ml Interno 0,5ml Externo Laranja Capsula Para Laboratório</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 60.87</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/AUsosjRQ7q" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ☕ Cozinha, Cafeteiras & Café
+🔥 *1000 Microtubo Cônico 0,38ml Interno 0,5ml Externo Laranja Capsula Para Laboratório*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 60,87*
+
+💸 Comissão Estimada: R$ 28,00 (46.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/AUsosjRQ7q</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/sg-11134201-8259f-mr1tu68x4k5d56" alt="Microtubo Miraplus 0,65 Interno e Externo Rosa Neon" loading="lazy">
+                    
+                    <div class="commission-badge">+46.0% (R$ 34,30)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 phitos_lab</div>
+                    <h3 class="product-title" title="Microtubo Miraplus 0,65 Interno e Externo Rosa Neon">Microtubo Miraplus 0,65 Interno e Externo Rosa Neon</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 74.56</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/AKZOgQS3Sp" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ☕ Cozinha, Cafeteiras & Café
+🔥 *Microtubo Miraplus 0,65 Interno e Externo Rosa Neon*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 74,56*
+
+💸 Comissão Estimada: R$ 34,30 (46.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/AKZOgQS3Sp</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820ma-mm644rubxzbbe8" alt="Flaconete Fundo Chato 4,5 ml Int e 5,0 Ext Neutro 500 Un" loading="lazy">
+                    
+                    <div class="commission-badge">+46.0% (R$ 48,30)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 phitos_lab</div>
+                    <h3 class="product-title" title="Flaconete Fundo Chato 4,5 ml Int e 5,0 Ext Neutro 500 Un">Flaconete Fundo Chato 4,5 ml Int e 5,0 Ext Neutro 500 Un</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 105.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/8AUu6RaIrQ" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ☕ Cozinha, Cafeteiras & Café
+🔥 *Flaconete Fundo Chato 4,5 ml Int e 5,0 Ext Neutro 500 Un*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 105,00*
+
+💸 Comissão Estimada: R$ 48,30 (46.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/8AUu6RaIrQ</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820m7-mmhx9j0v74zr7c" alt="Bisnagas Alumínio 60g 100 Unid c/ Tampa Rosca branca 28 mm x 160 mm esmaltadas branca verniz interno" loading="lazy">
+                    
+                    <div class="commission-badge">+43.0% (R$ 118,68)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Detra Cosmeticos - Loja Oficial</div>
+                    <h3 class="product-title" title="Bisnagas Alumínio 60g 100 Unid c/ Tampa Rosca branca 28 mm x 160 mm esmaltadas branca verniz interno">Bisnagas Alumínio 60g 100 Unid c/ Tampa Rosca branca 28 mm x 160 mm esmaltadas branca verniz interno</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 11+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 276.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/80BTu8awCP" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+⚡ Médio Ticket / Destaque • ☕ Cozinha, Cafeteiras & Café
+🔥 *Bisnagas Alumínio 60g 100 Unid c/ Tampa Rosca branca 28 mm x 160 mm esmaltadas branca verniz interno*
+
+⭐ 4.9 | 🛍️ 11+ vendidos
+
+💰 *R$ 276,00*
+
+💸 Comissão Estimada: R$ 118,68 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/80BTu8awCP</div>
+                  </div>
+                </div>
+              
+          </div>
+        </div>
+      
+        <div id="tab-content-6" class="tab-content ">
+          <div class="grid">
+            
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-m2fmtg5ffnbq7d" alt="Pingente Cruz Palito Crucifixo Liso Banhado Ouro 18k Masculino Feminino Antialergico Garantia 1 ano" loading="lazy">
+                    <div class="discount-badge">-46%</div>
+                    <div class="commission-badge">+63.0% (R$ 12,59)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 DuracymVariedades</div>
+                    <h3 class="product-title" title="Pingente Cruz Palito Crucifixo Liso Banhado Ouro 18k Masculino Feminino Antialergico Garantia 1 ano">Pingente Cruz Palito Crucifixo Liso Banhado Ouro 18k Masculino Feminino Antialergico Garantia 1 ano</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 19.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/8KoKIkmw8B" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎵 Áudio & Caixas de Som
+🔥 *Pingente Cruz Palito Crucifixo Liso Banhado Ouro 18k Masculino Feminino Antialergico Garantia 1 ano*
+
+⭐ 4.9 | 🛍️ 0+ vendidos
+
+💰 *R$ 19,99*
+
+📉 *46% OFF*
+
+💸 Comissão Estimada: R$ 12,59 (63.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/8KoKIkmw8B</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/sg-11134201-81zuc-mn8w1swcl1qb71" alt="Piercing Titânio Argola Zircônia Septo Rook Anti Alérgico D-ring Titânio G23 Hipoalergênico Anti Alérgico Nostril Nariz" loading="lazy">
+                    <div class="discount-badge">-5%</div>
+                    <div class="commission-badge">+56.0% (R$ 21,22)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Conta Seven</div>
+                    <h3 class="product-title" title="Piercing Titânio Argola Zircônia Septo Rook Anti Alérgico D-ring Titânio G23 Hipoalergênico Anti Alérgico Nostril Nariz">Piercing Titânio Argola Zircônia Septo Rook Anti Alérgico D-ring Titânio G23 Hipoalergênico Anti Alérgico Nostril Nariz</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 37.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/8pkatfl27I" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎵 Áudio & Caixas de Som
+🔥 *Piercing Titânio Argola Zircônia Septo Rook Anti Alérgico D-ring Titânio G23 Hipoalergênico Anti Alérgico Nostril Nariz*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 37,90*
+
+📉 *5% OFF*
+
+💸 Comissão Estimada: R$ 21,22 (56.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/8pkatfl27I</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/sg-11134201-8262q-mm2ep9lthjwg90" alt="Piercing Mamilo Par Prata Aço Cirúrgico 316L Antialérgico Hipoalergênico Feminino Masculino Acessório Corpo" loading="lazy">
+                    <div class="discount-badge">-36%</div>
+                    <div class="commission-badge">+56.0% (R$ 13,38)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Conta Seven</div>
+                    <h3 class="product-title" title="Piercing Mamilo Par Prata Aço Cirúrgico 316L Antialérgico Hipoalergênico Feminino Masculino Acessório Corpo">Piercing Mamilo Par Prata Aço Cirúrgico 316L Antialérgico Hipoalergênico Feminino Masculino Acessório Corpo</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 23.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/8fRAhMlfSH" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎵 Áudio & Caixas de Som
+🔥 *Piercing Mamilo Par Prata Aço Cirúrgico 316L Antialérgico Hipoalergênico Feminino Masculino Acessório Corpo*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 23,90*
+
+📉 *36% OFF*
+
+💸 Comissão Estimada: R$ 13,38 (56.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/8fRAhMlfSH</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/sg-11134201-820og-mnygkgvh0mpx2b" alt="Piercing  Argola Nariz Nostril Helix Orelha Titânio D-ring Click Cravejada 8mm 10mm" loading="lazy">
+                    <div class="discount-badge">-14%</div>
+                    <div class="commission-badge">+56.0% (R$ 21,22)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Conta Seven</div>
+                    <h3 class="product-title" title="Piercing  Argola Nariz Nostril Helix Orelha Titânio D-ring Click Cravejada 8mm 10mm">Piercing  Argola Nariz Nostril Helix Orelha Titânio D-ring Click Cravejada 8mm 10mm</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 37.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/9ANRIHjlRO" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎵 Áudio & Caixas de Som
+🔥 *Piercing  Argola Nariz Nostril Helix Orelha Titânio D-ring Click Cravejada 8mm 10mm*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 37,90*
+
+📉 *14% OFF*
+
+💸 Comissão Estimada: R$ 21,22 (56.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/9ANRIHjlRO</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/sg-11134201-8262i-mm2eoqw1fu9w88" alt="Joia Corporal Mamilo Prata Rosa Aço Cirúrgico Brinco Corporal Inox Inoxidável Seio Acessório Modelo Original Premium" loading="lazy">
+                    <div class="discount-badge">-27%</div>
+                    <div class="commission-badge">+56.0% (R$ 13,38)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Conta Seven</div>
+                    <h3 class="product-title" title="Joia Corporal Mamilo Prata Rosa Aço Cirúrgico Brinco Corporal Inox Inoxidável Seio Acessório Modelo Original Premium">Joia Corporal Mamilo Prata Rosa Aço Cirúrgico Brinco Corporal Inox Inoxidável Seio Acessório Modelo Original Premium</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 23.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/90415ykOmN" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎵 Áudio & Caixas de Som
+🔥 *Joia Corporal Mamilo Prata Rosa Aço Cirúrgico Brinco Corporal Inox Inoxidável Seio Acessório Modelo Original Premium*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 23,90*
+
+📉 *27% OFF*
+
+💸 Comissão Estimada: R$ 13,38 (56.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/90415ykOmN</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820li-moq24hbpscn9d3" alt="Aplique Emborrachado Infantil Cereja Cerejinhas Fofas Laços Tiaras Prendedores Artesanato DIY" loading="lazy">
+                    <div class="discount-badge">-27%</div>
+                    <div class="commission-badge">+53.0% (R$ 8,47)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 andreiagsimimosapliques</div>
+                    <h3 class="product-title" title="Aplique Emborrachado Infantil Cereja Cerejinhas Fofas Laços Tiaras Prendedores Artesanato DIY">Aplique Emborrachado Infantil Cereja Cerejinhas Fofas Laços Tiaras Prendedores Artesanato DIY</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 15.98</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/9V0HgtiUlU" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎵 Áudio & Caixas de Som
+🔥 *Aplique Emborrachado Infantil Cereja Cerejinhas Fofas Laços Tiaras Prendedores Artesanato DIY*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 15,98*
+
+📉 *27% OFF*
+
+💸 Comissão Estimada: R$ 8,47 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/9V0HgtiUlU</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-mamshp2akkgf36" alt="Tatuagem Temporária Infantil BRW - Kit com 12 Unidades - Festa Infantil - Lembrancinha - Criativo" loading="lazy">
+                    
+                    <div class="commission-badge">+53.0% (R$ 8,92)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Konvites Express Design</div>
+                    <h3 class="product-title" title="Tatuagem Temporária Infantil BRW - Kit com 12 Unidades - Festa Infantil - Lembrancinha - Criativo">Tatuagem Temporária Infantil BRW - Kit com 12 Unidades - Festa Infantil - Lembrancinha - Criativo</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 16.83</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/9KgrUaj86T" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎵 Áudio & Caixas de Som
+🔥 *Tatuagem Temporária Infantil BRW - Kit com 12 Unidades - Festa Infantil - Lembrancinha - Criativo*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 16,83*
+
+💸 Comissão Estimada: R$ 8,92 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/9KgrUaj86T</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mhwdrpb4zbb5cc" alt="Búzios Africano Aberto Natural - 500g 1kg / Umbanda e Candomblé" loading="lazy">
+                    
+                    <div class="commission-badge">+53.0% (R$ 185,50)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Axe Artigos Religiosos e Variedades</div>
+                    <h3 class="product-title" title="Búzios Africano Aberto Natural - 500g 1kg / Umbanda e Candomblé">Búzios Africano Aberto Natural - 500g 1kg / Umbanda e Candomblé</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 510.00</div>
+                        <div class="price-current">R$ 350.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/9pd85VhE5a" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+⚡ Médio Ticket / Destaque • 🎵 Áudio & Caixas de Som
+🔥 *Búzios Africano Aberto Natural - 500g 1kg / Umbanda e Candomblé*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 350,00*
+
+💸 Comissão Estimada: R$ 185,50 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/9pd85VhE5a</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820lk-mmoncih8z2mc6f" alt="4 Peças Conjunto de Brincos de Nariz de Zircônia em Aço Inoxidável, Piercing de Nariz Anel com cores sortidas" loading="lazy">
+                    
+                    <div class="commission-badge">+48.0% (R$ 12,00)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 MAURICIO VARIEDADES</div>
+                    <h3 class="product-title" title="4 Peças Conjunto de Brincos de Nariz de Zircônia em Aço Inoxidável, Piercing de Nariz Anel com cores sortidas">4 Peças Conjunto de Brincos de Nariz de Zircônia em Aço Inoxidável, Piercing de Nariz Anel com cores sortidas</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 25.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/9fJhtChrQZ" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎵 Áudio & Caixas de Som
+🔥 *4 Peças Conjunto de Brincos de Nariz de Zircônia em Aço Inoxidável, Piercing de Nariz Anel com cores sortidas*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 25,00*
+
+💸 Comissão Estimada: R$ 12,00 (48.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/9fJhtChrQZ</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/08f7f5ef6e74245efd83383344af4eff" alt="Pingente Paz e Amor Desejos em Prata 925" loading="lazy">
+                    
+                    <div class="commission-badge">+48.0% (R$ 28,22)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Latzi</div>
+                    <h3 class="product-title" title="Pingente Paz e Amor Desejos em Prata 925">Pingente Paz e Amor Desejos em Prata 925</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 58.80</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/AAFyU7fxPg" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🎵 Áudio & Caixas de Som
+🔥 *Pingente Paz e Amor Desejos em Prata 925*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 58,80*
+
+💸 Comissão Estimada: R$ 28,22 (48.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/AAFyU7fxPg</div>
+                  </div>
+                </div>
+              
+          </div>
+        </div>
+      
+        <div id="tab-content-7" class="tab-content ">
+          <div class="grid">
+            
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-ltwpzfm2l1sw10" alt="Conjunto moletom unissex Header" loading="lazy">
+                    
+                    <div class="commission-badge">+43.0% (R$ 43,00)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Loja Header</div>
+                    <h3 class="product-title" title="Conjunto moletom unissex Header">Conjunto moletom unissex Header</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 99.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/50XsKd8MFU" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🧰 Ferramentas & Oficina
+🔥 *Conjunto moletom unissex Header*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 99,99*
+
+💸 Comissão Estimada: R$ 43,00 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/50XsKd8MFU</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81zts-mky10jtzmt4x20" alt="blusa moletom unissex" loading="lazy">
+                    
+                    <div class="commission-badge">+43.0% (R$ 32,25)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 EBRAIM_FASHION</div>
+                    <h3 class="product-title" title="blusa moletom unissex">blusa moletom unissex</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 75.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/5ArIWw7iuX" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🧰 Ferramentas & Oficina
+🔥 *blusa moletom unissex*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 75,00*
+
+💸 Comissão Estimada: R$ 32,25 (43.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/5ArIWw7iuX</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134201-820lq-mqypnfpf89aedf" alt="Blusa Masculina Gola Redonda Careca plus size G1 ao G6 personalizada direto da fabrica" loading="lazy">
+                    <div class="discount-badge">-5%</div>
+                    <div class="commission-badge">+42.0% (R$ 39,50)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 W.o confecções</div>
+                    <h3 class="product-title" title="Blusa Masculina Gola Redonda Careca plus size G1 ao G6 personalizada direto da fabrica">Blusa Masculina Gola Redonda Careca plus size G1 ao G6 personalizada direto da fabrica</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.3</div>
+                      <div>🛍️ 1+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 94.05</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/4fv1w19cvS" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🧰 Ferramentas & Oficina
+🔥 *Blusa Masculina Gola Redonda Careca plus size G1 ao G6 personalizada direto da fabrica*
+
+⭐ 4.3 | 🛍️ 1+ vendidos
+
+💰 *R$ 94,05*
+
+📉 *5% OFF*
+
+💸 Comissão Estimada: R$ 39,50 (42.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/4fv1w19cvS</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820li-mmix091h8lj486" alt="Blusa Masculina Suéter Blusa de Fio Gola Redonda Punho e Barra Canelada Manga Longa Casaco" loading="lazy">
+                    <div class="discount-badge">-39%</div>
+                    <div class="commission-badge">+38.0% (R$ 27,70)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Vicio Fatal Oficial</div>
+                    <h3 class="product-title" title="Blusa Masculina Suéter Blusa de Fio Gola Redonda Punho e Barra Canelada Manga Longa Casaco">Blusa Masculina Suéter Blusa de Fio Gola Redonda Punho e Barra Canelada Manga Longa Casaco</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 72.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/4qES8K8zaV" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🧰 Ferramentas & Oficina
+🔥 *Blusa Masculina Suéter Blusa de Fio Gola Redonda Punho e Barra Canelada Manga Longa Casaco*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 72,90*
+
+📉 *39% OFF*
+
+💸 Comissão Estimada: R$ 27,70 (38.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/4qES8K8zaV</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81zuo-ml178py5zuv603" alt="Blusa De Frio Canguru Moletom Jaqueta Casaco Agasalho com bolso Time Futebol Corinthians Cinza" loading="lazy">
+                    <div class="discount-badge">-24%</div>
+                    <div class="commission-badge">+38.0% (R$ 25,84)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 LTvariedadess</div>
+                    <h3 class="product-title" title="Blusa De Frio Canguru Moletom Jaqueta Casaco Agasalho com bolso Time Futebol Corinthians Cinza">Blusa De Frio Canguru Moletom Jaqueta Casaco Agasalho com bolso Time Futebol Corinthians Cinza</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 7+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 68.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/4LIBXPAtbQ" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🧰 Ferramentas & Oficina
+🔥 *Blusa De Frio Canguru Moletom Jaqueta Casaco Agasalho com bolso Time Futebol Corinthians Cinza*
+
+⭐ 5.0 | 🛍️ 7+ vendidos
+
+💰 *R$ 68,00*
+
+📉 *24% OFF*
+
+💸 Comissão Estimada: R$ 25,84 (38.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/4LIBXPAtbQ</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/sg-11134201-7ravs-mabibvibyxk780" alt="Moletom Casaco De Frio Carro Luxo Reliquia Opala Ss" loading="lazy">
+                    <div class="discount-badge">-3%</div>
+                    <div class="commission-badge">+38.0% (R$ 25,84)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 LTvariedadess</div>
+                    <h3 class="product-title" title="Moletom Casaco De Frio Carro Luxo Reliquia Opala Ss">Moletom Casaco De Frio Carro Luxo Reliquia Opala Ss</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 3+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 68.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/4VbbjiAGGT" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🧰 Ferramentas & Oficina
+🔥 *Moletom Casaco De Frio Carro Luxo Reliquia Opala Ss*
+
+⭐ 5.0 | 🛍️ 3+ vendidos
+
+💰 *R$ 68,00*
+
+📉 *3% OFF*
+
+💸 Comissão Estimada: R$ 25,84 (38.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/4VbbjiAGGT</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mi7ily9m49oi91" alt="Moletom Feminino Blusa de Frio Canguru Moda Outono Inverno  Mão Coreana Estampado Com bolso e capuz" loading="lazy">
+                    <div class="discount-badge">-32%</div>
+                    <div class="commission-badge">+38.0% (R$ 25,84)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 LTvariedadess</div>
+                    <h3 class="product-title" title="Moletom Feminino Blusa de Frio Canguru Moda Outono Inverno  Mão Coreana Estampado Com bolso e capuz">Moletom Feminino Blusa de Frio Canguru Moda Outono Inverno  Mão Coreana Estampado Com bolso e capuz</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 68.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/40fL8nCAHO" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🧰 Ferramentas & Oficina
+🔥 *Moletom Feminino Blusa de Frio Canguru Moda Outono Inverno  Mão Coreana Estampado Com bolso e capuz*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 68,00*
+
+📉 *32% OFF*
+
+💸 Comissão Estimada: R$ 25,84 (38.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/40fL8nCAHO</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mi7ily9m8hdu18" alt="Moletom uissex Blusa De Frio Premium Casaco Algodão PALMEIRAS PORCO" loading="lazy">
+                    <div class="discount-badge">-32%</div>
+                    <div class="commission-badge">+38.0% (R$ 25,84)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 LTvariedadess</div>
+                    <h3 class="product-title" title="Moletom uissex Blusa De Frio Premium Casaco Algodão PALMEIRAS PORCO">Moletom uissex Blusa De Frio Premium Casaco Algodão PALMEIRAS PORCO</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 68.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/4AylL6BWwR" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🧰 Ferramentas & Oficina
+🔥 *Moletom uissex Blusa De Frio Premium Casaco Algodão PALMEIRAS PORCO*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 68,00*
+
+📉 *32% OFF*
+
+💸 Comissão Estimada: R$ 25,84 (38.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/4AylL6BWwR</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/sg-11134201-7ravl-mabitilol76ra2" alt="Moletom Canguru Casaco Corrida Lançamento Maverick anos 70" loading="lazy">
+                    <div class="discount-badge">-32%</div>
+                    <div class="commission-badge">+38.0% (R$ 25,84)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 LTvariedadess</div>
+                    <h3 class="product-title" title="Moletom Canguru Casaco Corrida Lançamento Maverick anos 70">Moletom Canguru Casaco Corrida Lançamento Maverick anos 70</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 68.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/111jZHNaMq" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🧰 Ferramentas & Oficina
+🔥 *Moletom Canguru Casaco Corrida Lançamento Maverick anos 70*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 68,00*
+
+📉 *32% OFF*
+
+💸 Comissão Estimada: R$ 25,84 (38.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/111jZHNaMq</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/sg-11134201-7rat5-mabisco9zfoha7" alt="Moletom Canguru Flanelado Skyline GTR Street Wear" loading="lazy">
+                    <div class="discount-badge">-3%</div>
+                    <div class="commission-badge">+38.0% (R$ 25,84)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 LTvariedadess</div>
+                    <h3 class="product-title" title="Moletom Canguru Flanelado Skyline GTR Street Wear">Moletom Canguru Flanelado Skyline GTR Street Wear</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 68.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1BL9laMx1t" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 🧰 Ferramentas & Oficina
+🔥 *Moletom Canguru Flanelado Skyline GTR Street Wear*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 68,00*
+
+📉 *3% OFF*
+
+💸 Comissão Estimada: R$ 25,84 (38.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1BL9laMx1t</div>
+                  </div>
+                </div>
+              
+          </div>
+        </div>
+      
+        <div id="tab-content-8" class="tab-content ">
+          <div class="grid">
+            
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/sg-11134201-8262g-mly12kflpw5ka2" alt="CORTADOR DE EVA samambaia renda portuguesa" loading="lazy">
+                    
+                    <div class="commission-badge">+82.0% (R$ 40,97)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 jfacpalmas-embalagens</div>
+                    <h3 class="product-title" title="CORTADOR DE EVA samambaia renda portuguesa">CORTADOR DE EVA samambaia renda portuguesa</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 49.96</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1BL9laVopw" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ⚽ Esporte, Tênis & Suplementos
+🔥 *CORTADOR DE EVA samambaia renda portuguesa*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 49,96*
+
+💸 Comissão Estimada: R$ 40,97 (82.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1BL9laVopw</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81zts-mktkdjkjw1s000" alt="Blusa masculina sport em camurça e tela arrastão" loading="lazy">
+                    <div class="discount-badge">-18%</div>
+                    <div class="commission-badge">+45.0% (R$ 22,88)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Sokhna Layla beachwear</div>
+                    <h3 class="product-title" title="Blusa masculina sport em camurça e tela arrastão">Blusa masculina sport em camurça e tela arrastão</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 53.30</div>
+                        <div class="price-current">R$ 50.84</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/111jZHWSAv" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ⚽ Esporte, Tênis & Suplementos
+🔥 *Blusa masculina sport em camurça e tela arrastão*
+
+⭐ 4.9 | 🛍️ 0+ vendidos
+
+💰 ~~R$ 53,30~~ por *R$ 50,84*
+📉 *18% OFF*
+
+💸 Comissão Estimada: R$ 22,88 (45.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/111jZHWSAv</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mfiku6q2wmisf8" alt="Conjunto masculino Camisa e calça/ P,M,G, GG/G1 G2/Plus Size Umbanda Candomblé Preto/Branco/ração / Exu  afro religiosa" loading="lazy">
+                    
+                    <div class="commission-badge">+39.0% (R$ 35,06)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Ateliê Afro Solar</div>
+                    <h3 class="product-title" title="Conjunto masculino Camisa e calça/ P,M,G, GG/G1 G2/Plus Size Umbanda Candomblé Preto/Branco/ração / Exu  afro religiosa">Conjunto masculino Camisa e calça/ P,M,G, GG/G1 G2/Plus Size Umbanda Candomblé Preto/Branco/ração / Exu  afro religiosa</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 155.90</div>
+                        <div class="price-current">R$ 89.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/qiJMyX5Vu" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ⚽ Esporte, Tênis & Suplementos
+🔥 *Conjunto masculino Camisa e calça/ P,M,G, GG/G1 G2/Plus Size Umbanda Candomblé Preto/Branco/ração / Exu  afro religiosa*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 89,90*
+
+💸 Comissão Estimada: R$ 35,06 (39.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/qiJMyX5Vu</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81ztc-mkfxack4buo3c0" alt="Roupa Conjunto Ração Em Oxford Masculino Branca Preta Candomblé Umbanda 2pç" loading="lazy">
+                    <div class="discount-badge">-15%</div>
+                    <div class="commission-badge">+33.0% (R$ 18,20)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Salve Jorge Guerreiro</div>
+                    <h3 class="product-title" title="Roupa Conjunto Ração Em Oxford Masculino Branca Preta Candomblé Umbanda 2pç">Roupa Conjunto Ração Em Oxford Masculino Branca Preta Candomblé Umbanda 2pç</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.8</div>
+                      <div>🛍️ 58+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 59.41</div>
+                        <div class="price-current">R$ 55.16</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/gOtAfXiqt" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ⚽ Esporte, Tênis & Suplementos
+🔥 *Roupa Conjunto Ração Em Oxford Masculino Branca Preta Candomblé Umbanda 2pç*
+
+⭐ 4.8 | 🛍️ 58+ vendidos
+
+💰 ~~R$ 59,41~~ por *R$ 55,16*
+📉 *15% OFF*
+
+💸 Comissão Estimada: R$ 18,20 (33.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/gOtAfXiqt</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-820l8-mlf0a7sljkli30" alt="Camiseta Dry Fit Leve Masculina Microfuros Anti Suor Esportiva" loading="lazy">
+                    <div class="discount-badge">-50%</div>
+                    <div class="commission-badge">+33.0% (R$ 11,52)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Cabana Magazine®</div>
+                    <h3 class="product-title" title="Camiseta Dry Fit Leve Masculina Microfuros Anti Suor Esportiva">Camiseta Dry Fit Leve Masculina Microfuros Anti Suor Esportiva</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.6</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 34.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1qaqYoTHU8" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ⚽ Esporte, Tênis & Suplementos
+🔥 *Camiseta Dry Fit Leve Masculina Microfuros Anti Suor Esportiva*
+
+⭐ 4.6 | 🛍️ 0+ vendidos
+
+💰 *R$ 34,90*
+
+📉 *50% OFF*
+
+💸 Comissão Estimada: R$ 11,52 (33.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1qaqYoTHU8</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-m19q0rgrieo059" alt="Kit 3 Camiseta Masculina Canelada Manga Curta Slim Premium" loading="lazy">
+                    <div class="discount-badge">-42%</div>
+                    <div class="commission-badge">+30.0% (R$ 33,00)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Diamante Verde Modas</div>
+                    <h3 class="product-title" title="Kit 3 Camiseta Masculina Canelada Manga Curta Slim Premium">Kit 3 Camiseta Masculina Canelada Manga Curta Slim Premium</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.6</div>
+                      <div>🛍️ 7+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 109.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1gHQMVTup7" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ⚽ Esporte, Tênis & Suplementos
+🔥 *Kit 3 Camiseta Masculina Canelada Manga Curta Slim Premium*
+
+⭐ 4.6 | 🛍️ 7+ vendidos
+
+💰 *R$ 109,99*
+
+📉 *42% OFF*
+
+💸 Comissão Estimada: R$ 33,00 (30.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1gHQMVTup7</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/sg-11134201-7rd40-lwpp5u7j927a97" alt="Kit 4 Camiseta Masculina Slim Canelada Gola Alta Manga Curta" loading="lazy">
+                    <div class="discount-badge">-41%</div>
+                    <div class="commission-badge">+30.0% (R$ 48,00)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Diamante Verde Modas</div>
+                    <h3 class="product-title" title="Kit 4 Camiseta Masculina Slim Canelada Gola Alta Manga Curta">Kit 4 Camiseta Masculina Slim Canelada Gola Alta Manga Curta</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.8</div>
+                      <div>🛍️ 2+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 159.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1Vy0ACUYA6" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+⚡ Médio Ticket / Destaque • ⚽ Esporte, Tênis & Suplementos
+🔥 *Kit 4 Camiseta Masculina Slim Canelada Gola Alta Manga Curta*
+
+⭐ 4.8 | 🛍️ 2+ vendidos
+
+💰 *R$ 159,99*
+
+📉 *41% OFF*
+
+💸 Comissão Estimada: R$ 48,00 (30.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1Vy0ACUYA6</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134275-7r98o-mdes5mn9jnwxf6" alt="T-Shirt Infantil Feminina Listrada Azul – Ideal para Passeio e Dia a Dia" loading="lazy">
+                    
+                    <div class="commission-badge">+30.0% (R$ 17,97)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Bravo Fantasias</div>
+                    <h3 class="product-title" title="T-Shirt Infantil Feminina Listrada Azul – Ideal para Passeio e Dia a Dia">T-Shirt Infantil Feminina Listrada Azul – Ideal para Passeio e Dia a Dia</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 69.90</div>
+                        <div class="price-current">R$ 59.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/1LeZxtVBV5" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ⚽ Esporte, Tênis & Suplementos
+🔥 *T-Shirt Infantil Feminina Listrada Azul – Ideal para Passeio e Dia a Dia*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 59,90*
+
+💸 Comissão Estimada: R$ 17,97 (30.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/1LeZxtVBV5</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-maouz8ayuvtb28" alt="Calçolão Masculino de Ração /Branco, Preto, com bolso/ Com forro  Afro religiosa Plus size G1 G2 G3 G4" loading="lazy">
+                    
+                    <div class="commission-badge">+30.0% (R$ 11,97)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Ateliê Afro Solar</div>
+                    <h3 class="product-title" title="Calçolão Masculino de Ração /Branco, Preto, com bolso/ Com forro  Afro religiosa Plus size G1 G2 G3 G4">Calçolão Masculino de Ração /Branco, Preto, com bolso/ Com forro  Afro religiosa Plus size G1 G2 G3 G4</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.3</div>
+                      <div>🛍️ 2+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 89.90</div>
+                        <div class="price-current">R$ 39.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2VqXM2Qk8K" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ⚽ Esporte, Tênis & Suplementos
+🔥 *Calçolão Masculino de Ração /Branco, Preto, com bolso/ Com forro  Afro religiosa Plus size G1 G2 G3 G4*
+
+⭐ 4.3 | 🛍️ 2+ vendidos
+
+💰 *R$ 39,90*
+
+💸 Comissão Estimada: R$ 11,97 (30.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2VqXM2Qk8K</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mfiku6q328ske0" alt="Bata Branca Masculina Umbanda e Candomblé/Ração/Preto Plus size Afro religiosa" loading="lazy">
+                    
+                    <div class="commission-badge">+29.0% (R$ 8,67)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Ateliê Afro Solar</div>
+                    <h3 class="product-title" title="Bata Branca Masculina Umbanda e Candomblé/Ração/Preto Plus size Afro religiosa">Bata Branca Masculina Umbanda e Candomblé/Ração/Preto Plus size Afro religiosa</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 3+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 59.90</div>
+                        <div class="price-current">R$ 29.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/2LX79jRNTJ" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • ⚽ Esporte, Tênis & Suplementos
+🔥 *Bata Branca Masculina Umbanda e Candomblé/Ração/Preto Plus size Afro religiosa*
+
+⭐ 5.0 | 🛍️ 3+ vendidos
+
+💰 *R$ 29,90*
+
+💸 Comissão Estimada: R$ 8,67 (29.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/2LX79jRNTJ</div>
+                  </div>
+                </div>
+              
+          </div>
+        </div>
+      
+        <div id="tab-content-9" class="tab-content ">
+          <div class="grid">
+            
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/sg-11134201-7rdwn-lyt7mvh2n212be" alt="Colar de Aço Titânio Pingente de Borboleta Fosco de Aço Titânio Colar de Luxo Leve Não Desbotado Cadeia de Clavícula de Classe Simples" loading="lazy">
+                    
+                    <div class="commission-badge">+73.0% (R$ 13,87)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 ChicPretty</div>
+                    <h3 class="product-title" title="Colar de Aço Titânio Pingente de Borboleta Fosco de Aço Titânio Colar de Luxo Leve Não Desbotado Cadeia de Clavícula de Classe Simples">Colar de Aço Titânio Pingente de Borboleta Fosco de Aço Titânio Colar de Luxo Leve Não Desbotado Cadeia de Clavícula de Classe Simples</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 19.00</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/19CNRnSXc" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 💄 Perfumaria & Cuidados
+🔥 *Colar de Aço Titânio Pingente de Borboleta Fosco de Aço Titânio Colar de Luxo Leve Não Desbotado Cadeia de Clavícula de Classe Simples*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 19,00*
+
+💸 Comissão Estimada: R$ 13,87 (73.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/19CNRnSXc</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/sg-11134201-825a7-mq31eds6gtn033" alt="Colar de aço de titânio Colar simples e legal com Design de nicho" loading="lazy">
+                    <div class="discount-badge">-75%</div>
+                    <div class="commission-badge">+55.0% (R$ 10,50)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 dzlhw69.br</div>
+                    <h3 class="product-title" title="Colar de aço de titânio Colar simples e legal com Design de nicho">Colar de aço de titânio Colar simples e legal com Design de nicho</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 19.09</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/BScZkmpCf" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 💄 Perfumaria & Cuidados
+🔥 *Colar de aço de titânio Colar simples e legal com Design de nicho*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 19,09*
+
+📉 *75% OFF*
+
+💸 Comissão Estimada: R$ 10,50 (55.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/BScZkmpCf</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-loyejr0wpx9u19" alt="Trio Colar Feminino Com Pingente Olho Grego Prata e Dourado" loading="lazy">
+                    
+                    <div class="commission-badge">+53.0% (R$ 10,55)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 PORTA FECHADA.COM</div>
+                    <h3 class="product-title" title="Trio Colar Feminino Com Pingente Olho Grego Prata e Dourado">Trio Colar Feminino Com Pingente Olho Grego Prata e Dourado</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 19.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/Lm2m3mBri" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 💄 Perfumaria & Cuidados
+🔥 *Trio Colar Feminino Com Pingente Olho Grego Prata e Dourado*
+
+⭐ 5.0 | 🛍️ 0+ vendidos
+
+💰 *R$ 19,90*
+
+💸 Comissão Estimada: R$ 10,55 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/Lm2m3mBri</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-m8c70ojlfnkhdb" alt="Colar Trevo em Aço inox Legítimo Premium" loading="lazy">
+                    
+                    <div class="commission-badge">+53.0% (R$ 31,75)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Lullaby Store</div>
+                    <h3 class="product-title" title="Colar Trevo em Aço inox Legítimo Premium">Colar Trevo em Aço inox Legítimo Premium</h3>
+                    <div class="metrics">
+                      <div>⭐ 0</div>
+                      <div>🛍️ 0+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 59.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/W5SyMlYWl" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 💄 Perfumaria & Cuidados
+🔥 *Colar Trevo em Aço inox Legítimo Premium*
+
+⭐ 4.5 | 🛍️ 0+ vendidos
+
+💰 *R$ 59,90*
+
+💸 Comissão Estimada: R$ 31,75 (53.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/W5SyMlYWl</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-81z1k-mdxavg7lkgzlf7" alt="Colar Feminino De Pedra Com Bolacha De Madeira e Resina Miçangas" loading="lazy">
+                    <div class="discount-badge">-29%</div>
+                    <div class="commission-badge">+48.0% (R$ 11,04)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Samarinda </div>
+                    <h3 class="product-title" title="Colar Feminino De Pedra Com Bolacha De Madeira e Resina Miçangas">Colar Feminino De Pedra Com Bolacha De Madeira e Resina Miçangas</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 7+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 22.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/9zwYHpBOFc" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 💄 Perfumaria & Cuidados
+🔥 *Colar Feminino De Pedra Com Bolacha De Madeira e Resina Miçangas*
+
+⭐ 5.0 | 🛍️ 7+ vendidos
+
+💰 *R$ 22,99*
+
+📉 *29% OFF*
+
+💸 Comissão Estimada: R$ 11,04 (48.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/9zwYHpBOFc</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-mbia1lriw3949b" alt="Colar Miçangas Vintage com Pérola e Strass + Pulseira Juvenil Elegante hysteric" loading="lazy">
+                    <div class="discount-badge">-48%</div>
+                    <div class="commission-badge">+48.0% (R$ 7,68)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Samarinda </div>
+                    <h3 class="product-title" title="Colar Miçangas Vintage com Pérola e Strass + Pulseira Juvenil Elegante hysteric">Colar Miçangas Vintage com Pérola e Strass + Pulseira Juvenil Elegante hysteric</h3>
+                    <div class="metrics">
+                      <div>⭐ 5</div>
+                      <div>🛍️ 3+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 15.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/AAFyU8Akuf" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 💄 Perfumaria & Cuidados
+🔥 *Colar Miçangas Vintage com Pérola e Strass + Pulseira Juvenil Elegante hysteric*
+
+⭐ 5.0 | 🛍️ 3+ vendidos
+
+💰 *R$ 15,99*
+
+📉 *48% OFF*
+
+💸 Comissão Estimada: R$ 7,68 (48.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/AAFyU8Akuf</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/br-11134207-7r98o-m5n3ur5tu20i54" alt="Colar feminino Gargantilhas chocker cristais de vidro colorido moda feminina" loading="lazy">
+                    
+                    <div class="commission-badge">+46.0% (R$ 9,15)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Ac Almeida Acessorios</div>
+                    <h3 class="product-title" title="Colar feminino Gargantilhas chocker cristais de vidro colorido moda feminina">Colar feminino Gargantilhas chocker cristais de vidro colorido moda feminina</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.8</div>
+                      <div>🛍️ 29+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 19.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/AKZOgRA7Zi" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 💄 Perfumaria & Cuidados
+🔥 *Colar feminino Gargantilhas chocker cristais de vidro colorido moda feminina*
+
+⭐ 4.8 | 🛍️ 29+ vendidos
+
+💰 *R$ 19,90*
+
+💸 Comissão Estimada: R$ 9,15 (46.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/AKZOgRA7Zi</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/d352deae3357e1afe9083d731a34e4f0" alt="Corrente Masculina De Ouro Veneziana 1mm 60cm Banhada a Ouro 24k Cordão C/Garantia" loading="lazy">
+                    <div class="discount-badge">-50%</div>
+                    <div class="commission-badge">+45.0% (R$ 9,00)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Tropical Joias | Varejo | Atacado</div>
+                    <h3 class="product-title" title="Corrente Masculina De Ouro Veneziana 1mm 60cm Banhada a Ouro 24k Cordão C/Garantia">Corrente Masculina De Ouro Veneziana 1mm 60cm Banhada a Ouro 24k Cordão C/Garantia</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.9</div>
+                      <div>🛍️ 49+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        <div class="price-old">R$ 75.00</div>
+                        <div class="price-current">R$ 19.99</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/AUsosk9UEl" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 💄 Perfumaria & Cuidados
+🔥 *Corrente Masculina De Ouro Veneziana 1mm 60cm Banhada a Ouro 24k Cordão C/Garantia*
+
+⭐ 4.9 | 🛍️ 49+ vendidos
+
+💰 ~~R$ 75,00~~ por *R$ 19,99*
+📉 *50% OFF*
+
+💸 Comissão Estimada: R$ 9,00 (45.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/AUsosk9UEl</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/cbef1fd58f6859651357c42e6aa121d6" alt="Corrente Masculina De Ouro Grumet 2mm 70cm Banhada a Ouro 18k Cordão C/Garantia" loading="lazy">
+                    <div class="discount-badge">-66%</div>
+                    <div class="commission-badge">+45.0% (R$ 11,66)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Tropical Joias | Varejo | Atacado</div>
+                    <h3 class="product-title" title="Corrente Masculina De Ouro Grumet 2mm 70cm Banhada a Ouro 18k Cordão C/Garantia">Corrente Masculina De Ouro Grumet 2mm 70cm Banhada a Ouro 18k Cordão C/Garantia</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.8</div>
+                      <div>🛍️ 42+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 25.90</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/9KgrUbDvbY" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 💄 Perfumaria & Cuidados
+🔥 *Corrente Masculina De Ouro Grumet 2mm 70cm Banhada a Ouro 18k Cordão C/Garantia*
+
+⭐ 4.8 | 🛍️ 42+ vendidos
+
+💰 *R$ 25,90*
+
+📉 *66% OFF*
+
+💸 Comissão Estimada: R$ 11,66 (45.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/9KgrUbDvbY</div>
+                  </div>
+                </div>
+              
+                <div class="card">
+                  <div class="img-wrapper">
+                    <img src="https://cf.shopee.com.br/file/7b87d3f38dd9c10436fcbfb8adfb3b83" alt="Corrente Masculina de Ouro 24K Carrier Cubinho 1mm 70cm Banhada a Ouro Cordão" loading="lazy">
+                    <div class="discount-badge">-66%</div>
+                    <div class="commission-badge">+45.0% (R$ 10,22)</div>
+                  </div>
+                  <div class="card-content">
+                    <div class="shop-name">🏪 Tropical Joias | Varejo | Atacado</div>
+                    <h3 class="product-title" title="Corrente Masculina de Ouro 24K Carrier Cubinho 1mm 70cm Banhada a Ouro Cordão">Corrente Masculina de Ouro 24K Carrier Cubinho 1mm 70cm Banhada a Ouro Cordão</h3>
+                    <div class="metrics">
+                      <div>⭐ 4.8</div>
+                      <div>🛍️ 38+ vendas</div>
+                    </div>
+                    <div class="price-box">
+                      <div>
+                        
+                        <div class="price-current">R$ 22.70</div>
+                      </div>
+                    </div>
+                    <a href="https://s.shopee.com.br/9V0HguDIGb" target="_blank" class="btn-buy">Testar Link de Afiliado 🚀</a>
+                    <div class="preview-telegram"><strong>Preview Telegram:</strong>
+🏷️ Achadinho • 💄 Perfumaria & Cuidados
+🔥 *Corrente Masculina de Ouro 24K Carrier Cubinho 1mm 70cm Banhada a Ouro Cordão*
+
+⭐ 4.8 | 🛍️ 38+ vendidos
+
+💰 *R$ 22,70*
+
+📉 *66% OFF*
+
+💸 Comissão Estimada: R$ 10,22 (45.0%)
+🛒 Compre aqui 👇
+https://s.shopee.com.br/9V0HguDIGb</div>
+                  </div>
+                </div>
+              
+          </div>
+        </div>
+      
+  </div>
+
+  <script>
+    function switchTab(index) {
+      document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+        if (idx === index) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+
+      document.querySelectorAll('.tab-content').forEach((content, idx) => {
+        if (idx === index) content.classList.add('active');
+        else content.classList.remove('active');
+      });
+    }
+  </script>
+
+</body>
+</html>

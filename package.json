@@ -1,0 +1,19 @@
+{
+  "name": "jacare-promos-explore",
+  "version": "1.0.0",
+  "description": "Script CLI exploratorio da Shopee Affiliate Open API para o canal Jacare das Promos",
+  "main": "src/explore/runProductScan.js",
+  "type": "module",
+  "scripts": {
+    "scan": "node src/explore/runProductScan.js",
+    "compare": "node src/explore/compareCommissions.js"
+  },
+  "keywords": [
+    "shopee",
+    "affiliate",
+    "telegram",
+    "graphql"
+  ],
+  "author": "",
+  "license": "ISC"
+}
