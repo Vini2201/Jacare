@@ -14,6 +14,38 @@ const io = new Server(server);
 // Conecta ao socket do Docker da hospedeira (/var/run/docker.sock)
 const docker = new Docker({ socketPath: process.env.DOCKER_SOCKET || '/var/run/docker.sock' });
 
+// 🔒 SISTEMA DE AUTENTICAÇÃO (PROTEÇÃO DO PAINEL)
+// Lê as credenciais de variáveis de ambiente. Se não configuradas, usa um padrão seguro.
+const DASHBOARD_USER = process.env.DASHBOARD_USER || 'admin';
+const DASHBOARD_PASS = process.env.DASHBOARD_PASS || 'scalegrid_pass_2026';
+
+const basicAuthMiddleware = (req, res, next) => {
+  // Permite acesso livre para a rota de healthcheck e webhooks autenticados por token
+  if (req.path === '/api/health' || req.path === '/api/webhook/trigger' || req.path === '/api/mcp/rpc') {
+    return next();
+  }
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="ScaleGrid VPS Engine Access"');
+    return res.status(401).send('Acesso Negado: Autenticação requerida.');
+  }
+
+  const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+  const user = auth[0];
+  const pass = auth[1];
+
+  if (user === DASHBOARD_USER && pass === DASHBOARD_PASS) {
+    return next();
+  }
+
+  res.setHeader('WWW-Authenticate', 'Basic realm="ScaleGrid VPS Engine Access"');
+  return res.status(401).send('Acesso Negado: Usuário ou Senha incorretos.');
+};
+
+// Aplica a proteção em todas as rotas do painel
+app.use(basicAuthMiddleware);
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
@@ -26,7 +58,6 @@ app.get('/api/health', (req, res) => {
 app.post('/api/webhook/trigger', async (req, res) => {
   const { action, service, payload, token } = req.body;
   
-  // Exemplo de segurança simples via Secret Token
   const SECRET_TOKEN = process.env.WEBHOOK_SECRET || 'scalegrid_secret_token_123';
   if (token && token !== SECRET_TOKEN) {
     return res.status(401).json({ error: 'Token de Webhook inválido.' });
@@ -34,7 +65,6 @@ app.post('/api/webhook/trigger', async (req, res) => {
 
   try {
     if (action === 'deploy_container') {
-      // Gatilho de deploy automático via Webhook (ex: pós-push no GitHub ou workflow do n8n)
       const imageName = payload.image || 'nginx:alpine';
       await pullImageIfNeeded(imageName);
       const container = await docker.createContainer({
@@ -56,7 +86,7 @@ app.post('/api/webhook/trigger', async (req, res) => {
   }
 });
 
-// 🤖 MCP SERVER ENDPOINT (Model Context Protocol SSE/JSON-RPC para LLMs / n8n MCP)
+// 🤖 MCP SERVER ENDPOINT
 app.post('/api/mcp/rpc', async (req, res) => {
   const { jsonrpc, method, params, id } = req.body;
 
