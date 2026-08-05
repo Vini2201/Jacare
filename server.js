@@ -15,9 +15,8 @@ const io = new Server(server);
 const docker = new Docker({ socketPath: process.env.DOCKER_SOCKET || '/var/run/docker.sock' });
 
 // 🔒 SISTEMA DE AUTENTICAÇÃO (PROTEÇÃO DO PAINEL)
-// Lê as credenciais de variáveis de ambiente. Se não configuradas, usa um padrão seguro.
-const DASHBOARD_USER = process.env.DASHBOARD_USER || 'admin';
-const DASHBOARD_PASS = process.env.DASHBOARD_PASS || 'scalegrid_pass_2026';
+const DASHBOARD_USER = process.env.DASHBOARD_USER || 'bsbvinidesousa@gmail.com';
+const DASHBOARD_PASS = process.env.DASHBOARD_PASS || 'Cap@2026';
 
 const basicAuthMiddleware = (req, res, next) => {
   // Permite acesso livre para a rota de healthcheck e webhooks autenticados por token
