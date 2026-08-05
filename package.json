@@ -2,11 +2,11 @@
   "name": "vps-dashboard",
   "version": "1.0.0",
   "description": "Ultra-lightweight VPS & Docker Management Dashboard",
-  "main": "src/server.js",
+  "main": "server.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "start": "node server.js",
+    "dev": "node --watch server.js"
   },
   "dependencies": {
     "dockerode": "^4.0.2",

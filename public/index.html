@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VPS & Docker Monitor | Jacaré EC2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo-icon">🐊</div>
+        <div>
+          <h1>Jacaré VPS Manager</h1>
+          <span class="sub-text" id="os-info">Carregando informações da máquina...</span>
+        </div>
+      </div>
+      <div class="header-status">
+        <span class="live-dot"></span>
+        <span id="uptime-display">Uptime: --</span>
+      </div>
+    </header>
+
+    <!-- Cards de Métricas Principais -->
+    <div class="metrics-grid">
+      <!-- CPU Card -->
+      <div class="card metric-card">
+        <div class="card-header">
+          <span class="card-title">Uso de CPU</span>
+          <span class="card-icon">⚡</span>
+        </div>
+        <div class="metric-value-container">
+          <span class="metric-big" id="cpu-percent">0%</span>
+          <span class="metric-sub" id="cpu-cores">-- Cores</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="cpu-bar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- RAM Card -->
+      <div class="card metric-card">
+        <div class="card-header">
+          <span class="card-title">Memória RAM</span>
+          <span class="card-icon">🧠</span>
+        </div>
+        <div class="metric-value-container">
+          <span class="metric-big" id="ram-percent">0%</span>
+          <span class="metric-sub" id="ram-usage">0 GB / 0 GB</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill ram-color" id="ram-bar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Swap Card -->
+      <div class="card metric-card">
+        <div class="card-header">
+          <span class="card-title">SWAP (RAM Virtual)</span>
+          <span class="card-icon">💾</span>
+        </div>
+        <div class="metric-value-container">
+          <span class="metric-big" id="swap-usage">0 GB</span>
+          <span class="metric-sub" id="swap-total">de 0 GB</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill swap-color" id="swap-bar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Disco Card -->
+      <div class="card metric-card">
+        <div class="card-header">
+          <span class="card-title">Armazenamento (Disco)</span>
+          <span class="card-icon">💽</span>
+        </div>
+        <div class="metric-value-container">
+          <span class="metric-big" id="disk-percent">0%</span>
+          <span class="metric-sub" id="disk-usage">0 GB / 0 GB</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill disk-color" id="disk-bar" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de Containers Docker -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Containers Docker Rodando</h2>
+        <span class="badge badge-count" id="container-count">0 Containers</span>
+      </div>
+
+      <div class="card containers-table-card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Nome</th>
+              <th>Imagem</th>
+              <th>Portas</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="containers-list">
+            <tr>
+              <td colspan="5" class="empty-state">Buscando containers Docker...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal de Logs -->
+  <div class="modal-overlay" id="logs-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Logs do Container</h3>
+        <button class="btn-close" id="btn-close-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <pre class="logs-viewer" id="logs-content">Carregando logs...</pre>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
