@@ -1,7 +1,7 @@
 FROM node:20-alpine
 
-# Instala compiladores nativos necessários para C++/node-pty no Alpine Linux
-RUN apk add --no-base python3 make g++
+# Instala compiladores C++ nativos e Python3 no Alpine
+RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 
