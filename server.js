@@ -21,7 +21,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime() });
 });
 
-// Ações no Docker via REST
+// Ações no Docker via REST (Start, Stop, Restart, Remove)
 app.post('/api/containers/:id/:action', async (req, res) => {
   const { id, action } = req.params;
   try {
@@ -32,91 +32,85 @@ app.post('/api/containers/:id/:action', async (req, res) => {
     else if (action === 'remove') await container.remove({ force: true });
     else return res.status(400).json({ error: 'Ação inválida' });
     
-    res.json({ success: true, message: `Container ${action} executado!` });
+    res.json({ success: true, message: `Container ${action} executado com sucesso!` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Deploy de serviços pré-configurados (Estilo Easypanel 1-Click)
+// Helper para fazer Pull real de imagens Docker (Estilo Easypanel)
+async function pullImageIfNeeded(imageName) {
+  return new Promise((resolve, reject) => {
+    docker.pull(imageName, (err, stream) => {
+      if (err) return reject(err);
+      docker.modem.followProgress(stream, (err, output) => {
+        if (err) return reject(err);
+        resolve(output);
+      });
+    });
+  });
+}
+
+// Deploy de serviços pré-configurados (Com Docker Pull real)
 app.post('/api/deploy', async (req, res) => {
-  const { type } = req.body;
+  const { type, customImage } = req.body;
   try {
+    let imageName = '';
+    let containerName = '';
+    let envVars = [];
+    let portBindings = {};
+
     if (type === 'postgres') {
-      const container = await docker.createContainer({
-        Image: 'postgres:16-alpine',
-        name: `postgres-db-${Date.now()}`,
-        Env: ['POSTGRES_USER=jacare', 'POSTGRES_PASSWORD=jacare_secret_123', 'POSTGRES_DB=jacare_db'],
-        HostConfig: {
-          PortBindings: { '5432/tcp': [{ HostPort: '5432' }] },
-          RestartPolicy: { Name: 'always' }
-        }
-      });
-      await container.start();
-      return res.json({ success: true, message: 'PostgreSQL 16 iniciado na porta 5432!' });
+      imageName = 'postgres:16-alpine';
+      containerName = `postgres-db-${Date.now()}`;
+      envVars = ['POSTGRES_USER=jacare', 'POSTGRES_PASSWORD=jacare_secret_123', 'POSTGRES_DB=jacare_db'];
+      portBindings = { '5432/tcp': [{ HostPort: '5432' }] };
+    } else if (type === 'mysql') {
+      imageName = 'mysql:8.0';
+      containerName = `mysql-db-${Date.now()}`;
+      envVars = ['MYSQL_ROOT_PASSWORD=root_secret_123', 'MYSQL_DATABASE=jacare_db', 'MYSQL_USER=jacare', 'MYSQL_PASSWORD=jacare_secret_123'];
+      portBindings = { '3306/tcp': [{ HostPort: '3306' }] };
+    } else if (type === 'nginx') {
+      imageName = 'nginx:alpine';
+      containerName = `nginx-web-${Date.now()}`;
+      portBindings = { '80/tcp': [{ HostPort: '8080' }] };
+    } else if (type === 'redis') {
+      imageName = 'redis:alpine';
+      containerName = `redis-cache-${Date.now()}`;
+      portBindings = { '6379/tcp': [{ HostPort: '6379' }] };
+    } else if (type === 'telegram') {
+      imageName = 'node:20-alpine';
+      containerName = `telegram-mtproto-${Date.now()}`;
+      portBindings = { '4000/tcp': [{ HostPort: '4000' }] };
+    } else if (type === 'custom' && customImage) {
+      imageName = customImage;
+      containerName = `custom-app-${Date.now()}`;
+    } else {
+      return res.status(400).json({ error: 'Tipo de serviço não suportado' });
     }
 
-    if (type === 'mysql') {
-      const container = await docker.createContainer({
-        Image: 'mysql:8.0',
-        name: `mysql-db-${Date.now()}`,
-        Env: ['MYSQL_ROOT_PASSWORD=root_secret_123', 'MYSQL_DATABASE=jacare_db', 'MYSQL_USER=jacare', 'MYSQL_PASSWORD=jacare_secret_123'],
-        HostConfig: {
-          PortBindings: { '3306/tcp': [{ HostPort: '3306' }] },
-          RestartPolicy: { Name: 'always' }
-        }
-      });
-      await container.start();
-      return res.json({ success: true, message: 'MySQL 8.0 iniciado na porta 3306!' });
-    }
+    // 1. Fazer Pull real da Imagem no Docker Hub
+    await pullImageIfNeeded(imageName);
 
-    if (type === 'nginx') {
-      const container = await docker.createContainer({
-        Image: 'nginx:alpine',
-        name: `nginx-web-${Date.now()}`,
-        HostConfig: {
-          PortBindings: { '80/tcp': [{ HostPort: '8080' }] },
-          RestartPolicy: { Name: 'always' }
-        }
-      });
-      await container.start();
-      return res.json({ success: true, message: 'Nginx Web Server iniciado na porta 8080!' });
-    }
+    // 2. Criar e Iniciar o Container Real
+    const container = await docker.createContainer({
+      Image: imageName,
+      name: containerName,
+      Env: envVars,
+      HostConfig: {
+        PortBindings: portBindings,
+        RestartPolicy: { Name: 'always' }
+      }
+    });
 
-    if (type === 'redis') {
-      const container = await docker.createContainer({
-        Image: 'redis:alpine',
-        name: `redis-cache-${Date.now()}`,
-        HostConfig: {
-          PortBindings: { '6379/tcp': [{ HostPort: '6379' }] },
-          RestartPolicy: { Name: 'always' }
-        }
-      });
-      await container.start();
-      return res.json({ success: true, message: 'Redis Cache iniciado na porta 6379!' });
-    }
-
-    if (type === 'telegram') {
-      const container = await docker.createContainer({
-        Image: 'node:20-alpine',
-        name: `telegram-mtproto-${Date.now()}`,
-        Cmd: ['node', '-e', 'console.log("Telegram MTProto Service ativo!")'],
-        HostConfig: {
-          PortBindings: { '4000/tcp': [{ HostPort: '4000' }] },
-          RestartPolicy: { Name: 'always' }
-        }
-      });
-      await container.start();
-      return res.json({ success: true, message: 'Telegram Service iniciado na porta 4000!' });
-    }
-
-    res.status(400).json({ error: 'Tipo de serviço não suportado' });
+    await container.start();
+    res.json({ success: true, message: `Container ${containerName} criado e iniciado com a imagem ${imageName}!` });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: `Falha ao realizar deploy/pull: ${err.message}` });
   }
 });
 
-// 📁 GERENCIADOR DE ARQUIVOS (File Manager API)
+// 📁 GERENCIADOR DE ARQUIVOS ESTILO GOOGLE DRIVE (Navegar, Ler, Salvar e Baixar)
 app.get('/api/files', (req, res) => {
   const dirPath = req.query.path || '/app';
   try {
@@ -126,18 +120,56 @@ app.get('/api/files', (req, res) => {
       isDirectory: f.isDirectory(),
       path: path.join(dirPath, f.name)
     }));
-    res.json({ currentPath: dirPath, files: fileList });
+    
+    const parentPath = path.dirname(dirPath);
+    res.json({ 
+      currentPath: dirPath, 
+      parentPath: dirPath === '/' ? '/' : parentPath, 
+      files: fileList 
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// 🌐 APONTAMENTO DE DOMÍNIO & SSL (Proxy Config Simulator)
+// Ler conteúdo de arquivo para Editor
+app.get('/api/files/read', (req, res) => {
+  const filePath = req.query.path;
+  try {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    res.json({ path: filePath, content });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Salvar conteúdo de arquivo editado
+app.post('/api/files/save', (req, res) => {
+  const { path: filePath, content } = req.body;
+  try {
+    fs.writeFileSync(filePath, content, 'utf-8');
+    res.json({ success: true, message: 'Arquivo salvo com sucesso!' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Baixar arquivo
+app.get('/api/files/download', (req, res) => {
+  const filePath = req.query.path;
+  try {
+    res.download(filePath);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🌐 GERENCIADOR DE DOMÍNIOS & PROXY SSL
 const domainsList = [];
 app.post('/api/domains', (req, res) => {
   const { domain, containerPort } = req.body;
   if (!domain || !containerPort) {
-    return res.status(400).json({ error: 'Domínio e porta do container são obrigatórios.' });
+    return res.status(400).json({ error: 'Domínio e porta são obrigatórios.' });
   }
 
   const newDomain = {
@@ -148,7 +180,7 @@ app.post('/api/domains', (req, res) => {
     createdAt: new Date().toISOString()
   };
   domainsList.push(newDomain);
-  res.json({ success: true, domain: newDomain, message: `Domínio ${domain} apontado com SSL!` });
+  res.json({ success: true, domain: newDomain, message: `Domínio ${domain} configurado!` });
 });
 
 app.get('/api/domains', (req, res) => {
@@ -195,9 +227,7 @@ io.on('connection', (socket) => {
           created: c.Created,
           ports: c.Ports.map(p => `${p.PublicPort || ''}:${p.PrivatePort}`).filter(p => p !== ':')
         }));
-      } catch (e) {
-        // Docker socket pode não estar acessível localmente
-      }
+      } catch (e) {}
 
       socket.emit('metrics', {
         os: {
@@ -242,5 +272,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 VPS Lightweight Dashboard rodando na porta ${PORT}`);
+  console.log(`🚀 VPS Dashboard rodando na porta ${PORT}`);
 });

@@ -400,6 +400,24 @@ body {
   justify-content: flex-end;
 }
 
+/* Code Editor Textarea */
+.code-editor-textarea {
+  width: 100%;
+  background: #040d21;
+  border: 1px solid var(--border-dim);
+  border-radius: 8px;
+  color: #60a5fa;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  padding: 1rem;
+  resize: vertical;
+  outline: none;
+}
+
+.code-editor-textarea:focus {
+  border-color: var(--brand-blue);
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -415,6 +433,7 @@ body {
   border: 1px solid var(--border-dim);
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
+  text-decoration: none;
   transition: all 0.2s ease;
 }
 

@@ -1,6 +1,10 @@
 const socket = io();
 
-// Sistema de Abas (Tabs System)
+let currentDrivePath = '/app';
+let parentDrivePath = '/';
+let editingFilePath = '';
+
+// Sistema de Abas
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -45,6 +49,10 @@ const modalTitle = document.getElementById('modal-title');
 const logsContent = document.getElementById('logs-content');
 const btnCloseModal = document.getElementById('btn-close-modal');
 
+const fileEditorModal = document.getElementById('file-editor-modal');
+const editorFileTitle = document.getElementById('editor-file-title');
+const fileEditorContent = document.getElementById('file-editor-content');
+
 function formatUptime(seconds) {
   const d = Math.floor(seconds / (3600 * 24));
   const h = Math.floor((seconds % (3600 * 24)) / 3600);
@@ -79,8 +87,9 @@ socket.on('metrics', (data) => {
   renderContainers(data.containers);
 });
 
-// Deploy 1-Click
+// Deploy 1-Click com Docker Pull Real
 async function deployService(type) {
+  alert('⏳ Iniciando o Pull da imagem no Docker Hub... Aguarde alguns instantes.');
   try {
     const res = await fetch('/api/deploy', {
       method: 'POST',
@@ -88,24 +97,46 @@ async function deployService(type) {
       body: JSON.stringify({ type })
     });
     const data = await res.json();
-    if (res.ok) alert(`${data.message}`);
+    if (res.ok) alert(`✅ ${data.message}`);
     else alert(`Erro no Deploy: ${data.error}`);
   } catch (err) {
     alert(`Erro ao criar serviço: ${err.message}`);
   }
 }
 
-// 📁 Gerenciador de Arquivos com Ícones SVG
+// Deploy de Imagem Customizada
+async function deployCustomImage(e) {
+  e.preventDefault();
+  const customImage = document.getElementById('custom-image-input').value;
+  alert(`⏳ Puxando imagem ${customImage} do Docker Hub...`);
+
+  try {
+    const res = await fetch('/api/deploy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'custom', customImage })
+    });
+    const data = await res.json();
+    if (res.ok) alert(`✅ ${data.message}`);
+    else alert(`Erro no Deploy: ${data.error}`);
+  } catch (err) {
+    alert(`Erro ao puxar imagem: ${err.message}`);
+  }
+}
+
+// 📁 GERENCIADOR DE ARQUIVOS ESTILO GOOGLE DRIVE
 async function loadFiles(path = '/app') {
   try {
     const res = await fetch(`/api/files?path=${encodeURIComponent(path)}`);
     const data = await res.json();
     if (!res.ok) return;
 
-    currentFolderDisplay.textContent = data.currentPath;
+    currentDrivePath = data.currentPath;
+    parentDrivePath = data.parentPath;
+    currentFolderDisplay.textContent = currentDrivePath;
 
     if (data.files.length === 0) {
-      filesListEl.innerHTML = `<tr><td colspan="3" class="empty-row">Diretório vazio.</td></tr>`;
+      filesListEl.innerHTML = `<tr><td colspan="4" class="empty-row">Diretório vazio.</td></tr>`;
       return;
     }
 
@@ -114,13 +145,26 @@ async function loadFiles(path = '/app') {
         <td>
           <span style="display: flex; align-items: center; gap: 0.4rem;" class="${f.isDirectory ? 'icon-accent-amber' : 'icon-accent-blue'}">
             ${f.isDirectory 
-              ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Diretório`
+              ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Pasta`
               : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> Arquivo`
             }
           </span>
         </td>
-        <td><span class="cell-title">${f.name}</span></td>
+        <td>
+          ${f.isDirectory 
+            ? `<a href="#" onclick="loadFiles('${f.path.replace(/\\/g, '/')}'); return false;" class="cell-title" style="color: #60a5fa; text-decoration: underline;">${f.name}</a>`
+            : `<span class="cell-title">${f.name}</span>`
+          }
+        </td>
         <td><span class="cell-code">${f.path}</span></td>
+        <td>
+          <div class="actions-row">
+            ${!f.isDirectory ? `
+              <button class="btn btn-logs" onclick="openFileEditor('${f.path.replace(/\\/g, '/')}')">Editar</button>
+              <a href="/api/files/download?path=${encodeURIComponent(f.path)}" class="btn btn-primary" download>Baixar</a>
+            ` : `<button class="btn btn-start" onclick="loadFiles('${f.path.replace(/\\/g, '/')}')">Abrir</button>`}
+          </div>
+        </td>
       </tr>
     `).join('');
   } catch (err) {
@@ -128,7 +172,50 @@ async function loadFiles(path = '/app') {
   }
 }
 
-// 🌐 Gerenciador de Domínios
+function navigateDriveUp() {
+  if (currentDrivePath !== '/') {
+    loadFiles(parentDrivePath);
+  }
+}
+
+// Abrir e Salvar Arquivos no Editor
+async function openFileEditor(filePath) {
+  editingFilePath = filePath;
+  editorFileTitle.textContent = `Editar: ${filePath}`;
+  fileEditorContent.value = 'Carregando conteúdo...';
+  fileEditorModal.classList.add('active');
+
+  try {
+    const res = await fetch(`/api/files/read?path=${encodeURIComponent(filePath)}`);
+    const data = await res.json();
+    fileEditorContent.value = data.content || '';
+  } catch (err) {
+    fileEditorContent.value = `Erro ao carregar arquivo: ${err.message}`;
+  }
+}
+
+function closeEditorModal() {
+  fileEditorModal.classList.remove('active');
+}
+
+async function saveFileContent() {
+  try {
+    const res = await fetch('/api/files/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: editingFilePath, content: fileEditorContent.value })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert(`✅ ${data.message}`);
+      closeEditorModal();
+    } else alert(`Erro ao salvar: ${data.error}`);
+  } catch (err) {
+    alert(`Erro ao salvar arquivo: ${err.message}`);
+  }
+}
+
+// Domínios & SSL
 async function addDomain(e) {
   e.preventDefault();
   const domain = document.getElementById('domain-input').value;
@@ -144,9 +231,7 @@ async function addDomain(e) {
     if (res.ok) {
       alert(`${data.message}`);
       loadDomains();
-    } else {
-      alert(`Erro: ${data.error}`);
-    }
+    } else alert(`Erro: ${data.error}`);
   } catch (err) {
     alert(`Erro ao apontar domínio: ${err.message}`);
   }
