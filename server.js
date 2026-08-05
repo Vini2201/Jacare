@@ -15,8 +15,9 @@ const io = new Server(server);
 const docker = new Docker({ socketPath: process.env.DOCKER_SOCKET || '/var/run/docker.sock' });
 
 // 🔒 SISTEMA DE AUTENTICAÇÃO (PROTEÇÃO DO PAINEL)
-const DASHBOARD_USER = process.env.DASHBOARD_USER || 'bsbvinidesousa@gmail.com';
-const DASHBOARD_PASS = process.env.DASHBOARD_PASS || 'Cap@2026';
+// As credenciais reais vem APENAS da máquina (env var da EC2), sem expor no GitHub!
+const DASHBOARD_USER = process.env.DASHBOARD_USER || 'admin';
+const DASHBOARD_PASS = process.env.DASHBOARD_PASS || 'scalegrid_secret_pass';
 
 const basicAuthMiddleware = (req, res, next) => {
   // Permite acesso livre para a rota de healthcheck e webhooks autenticados por token
