@@ -1,19 +1,17 @@
 {
-  "name": "jacare-promos-explore",
+  "name": "vps-dashboard",
   "version": "1.0.0",
-  "description": "Script CLI exploratorio da Shopee Affiliate Open API para o canal Jacare das Promos",
-  "main": "src/explore/runProductScan.js",
-  "type": "module",
+  "description": "Ultra-lightweight VPS & Docker Management Dashboard",
+  "main": "src/server.js",
+  "type": "commonjs",
   "scripts": {
-    "scan": "node src/explore/runProductScan.js",
-    "compare": "node src/explore/compareCommissions.js"
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
   },
-  "keywords": [
-    "shopee",
-    "affiliate",
-    "telegram",
-    "graphql"
-  ],
-  "author": "",
-  "license": "ISC"
+  "dependencies": {
+    "dockerode": "^4.0.2",
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1",
+    "systeminformation": "^5.25.11"
+  }
 }

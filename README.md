@@ -1,49 +1,44 @@
-# Jacare das Promos - Script Exploratório Shopee Affiliate API
+# 🐊 Jacaré VPS Manager & Multi-Stack Deployer
 
-Este repositório contém a estrutura exploratória (CLI) para testar os endpoints, filtros, sortTypes e geração de comissões da **Shopee Affiliate Open API (GraphQL)** para o projeto **Jacaré das Promos**.
-
-## 🚀 Como Executar
-
-### 1. Requisitos
-Você pode usar o **Node.js Portátil** instalado em seu sistema:
-`C:\Users\vsandrade\Documents\OpenSquad-Carrossel\.portable\node\node.exe`
-
-### 2. Configurar Variáveis de Ambiente
-As credenciais estão salvas no arquivo `.env`:
-- `SHOPEE_APP_ID=18353060752`
-- `SHOPEE_SECRET_KEY=ROQWHFAOZJI4SV6M5HNVJQAXRL4QIA5W`
+Um painel ultraleve de gerenciamento para instâncias AWS EC2 / VPS Linux e sistema de implantação rápida de containers Docker.
 
 ---
 
-## 📂 Novas Funcionalidades de Categorias
+## 🚀 Como Subir na sua EC2 / VPS
 
-### 1. Mapeamento da Árvore de Categorias (`getCategories.js`)
-Executa a **introspecção de schema GraphQL**, descobre as categorias disponíveis na Shopee, imprime a tabela formatada no terminal e salva a árvore em `/src/output/categories.json`:
+### 1. Clonar e Iniciar o Dashboard (1 Comando)
 
-```bash
-& "C:\Users\vsandrade\Documents\OpenSquad-Carrossel\.portable\node\node.exe" src/queries/getCategories.js
-```
-
-### 2. Filtro por Nome da Categoria no Scan (`runProductScan.js`)
-Agora você pode filtrar por **nome da categoria** (ex: `eletrodomésticos`, `celulares`, `áudio`, `games`, `café`) direto na linha de comando. O script resolve automaticamente o nome do texto para o ID da categoria correspondente salvo em `categories.json` ou busca por palavra-chave se não houver ID direto.
+No terminal da sua EC2 (Ubuntu), execute:
 
 ```bash
-# Exemplo 1: Filtrar por Eletrodomésticos
-& "C:\Users\vsandrade\Documents\OpenSquad-Carrossel\.portable\node\node.exe" src/explore/runProductScan.js eletrodomésticos
-
-# Exemplo 2: Filtrar por Celulares
-& "C:\Users\vsandrade\Documents\OpenSquad-Carrossel\.portable\node\node.exe" src/explore/runProductScan.js celulares
-
-# Exemplo 3: Atualizar o Dashboard HTML
-& "C:\Users\vsandrade\Documents\OpenSquad-Carrossel\.portable\node\node.exe" src/explore/buildDashboard.js
+git clone https://github.com/SEU_USUARIO/Jacare.git
+cd Jacare
+docker compose up -d --build
 ```
+
+O dashboard estará disponível em `http://SEU_IP:3000`.
 
 ---
 
-## 📂 Estrutura de Arquivos
+## 📊 Recursos do VPS Dashboard
+- **Monitoramento em Tempo Real:** Uso de CPU, Memória RAM, SWAP e Espaço em Disco (via WebSockets).
+- **Gerenciador Docker:** Lista todos os containers rodando com botões de **Iniciar**, **Parar** e visualizador de **Logs** em tempo real.
+- **Leveza Extrema:** Consome menos de **20MB de RAM**!
 
-- `/src/queries/introspectSchema.js`: Realiza a consulta `__schema` de introspecção no GraphQL.
-- `/src/queries/getCategories.js`: Mapeia a árvore de categorias, salva em `categories.json` e imprime a tabela CLI.
-- `/src/explore/runProductScan.js`: Lê `categories.json` e aceita filtros textuais de categoria na linha de comando.
-- `/src/output/categories.json`: Mapeamento estruturado das categorias da Shopee.
-- `/dashboard.html`: Interface visual local para preview dos achadinhos e da copy do Telegram.
+---
+
+## 🗂️ Módulos / Templates Prontos (`/templates`)
+
+Suba bancos de dados e ambientes de desenvolvimento em segundos:
+
+| Módulo | Comando para Subir | Porta Web / GUI |
+| :--- | :--- | :--- |
+| **PostgreSQL 16 + Adminer** | `cd templates/postgres-adminer && docker compose up -d` | `8080` (Adminer GUI) |
+| **MySQL 8.0 + phpMyAdmin** | `cd templates/mysql-phpmyadmin && docker compose up -d` | `8081` (phpMyAdmin) |
+
+---
+
+## 🔑 Acesso SSH / MCP Rápido
+- **Host / IP:** `13.222.3.171`
+- **Usuário:** `ubuntu`
+- **Chave SSH:** `labsuser.pem`
