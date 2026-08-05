@@ -1,0 +1,14 @@
+{
+  "name": "telegram-service",
+  "version": "1.0.0",
+  "description": "Ultra-lightweight GramJS MTProto Telegram Automation Service",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "input": "^1.0.1",
+    "telegram": "^2.26.16"
+  }
+}

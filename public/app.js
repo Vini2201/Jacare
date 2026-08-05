@@ -62,6 +62,25 @@ socket.on('metrics', (data) => {
   renderContainers(data.containers);
 });
 
+// Função para Deploy em 1 Clique (Estilo Easypanel)
+async function deployService(type) {
+  try {
+    const res = await fetch('/api/deploy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert(`🚀 ${data.message}`);
+    } else {
+      alert(`Erro no Deploy: ${data.error}`);
+    }
+  } catch (err) {
+    alert(`Erro ao tentar criar serviço: ${err.message}`);
+  }
+}
+
 function renderContainers(containers) {
   containerCountEl.textContent = `${containers.length} Container${containers.length !== 1 ? 's' : ''}`;
 
@@ -94,6 +113,7 @@ function renderContainers(containers) {
             : `<button class="btn btn-start" onclick="controlContainer('${c.id}', 'start')">Iniciar</button>`
           }
           <button class="btn btn-logs" onclick="viewLogs('${c.id}', '${c.name}')">Logs</button>
+          <button class="btn btn-remove" onclick="controlContainer('${c.id}', 'remove')">Excluir</button>
         </td>
       </tr>
     `;
@@ -101,6 +121,7 @@ function renderContainers(containers) {
 }
 
 async function controlContainer(id, action) {
+  if (action === 'remove' && !confirm('Tem certeza que deseja remover este container?')) return;
   try {
     const res = await fetch(`/api/containers/${id}/${action}`, { method: 'POST' });
     const data = await res.json();

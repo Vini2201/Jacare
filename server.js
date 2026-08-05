@@ -28,9 +28,74 @@ app.post('/api/containers/:id/:action', async (req, res) => {
     if (action === 'start') await container.start();
     else if (action === 'stop') await container.stop();
     else if (action === 'restart') await container.restart();
+    else if (action === 'remove') await container.remove({ force: true });
     else return res.status(400).json({ error: 'Ação inválida' });
     
     res.json({ success: true, message: `Container ${action} executado!` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Deploy de serviços pré-configurados (Estilo Easypanel 1-Click)
+app.post('/api/deploy', async (req, res) => {
+  const { type } = req.body;
+  try {
+    if (type === 'postgres') {
+      const container = await docker.createContainer({
+        Image: 'postgres:16-alpine',
+        name: `postgres-db-${Date.now()}`,
+        Env: ['POSTGRES_USER=jacare', 'POSTGRES_PASSWORD=jacare_secret_123', 'POSTGRES_DB=jacare_db'],
+        HostConfig: {
+          PortBindings: { '5432/tcp': [{ HostPort: '5432' }] },
+          RestartPolicy: { Name: 'always' }
+        }
+      });
+      await container.start();
+      return res.json({ success: true, message: 'PostgreSQL 16 iniciado na porta 5432!' });
+    }
+
+    if (type === 'mysql') {
+      const container = await docker.createContainer({
+        Image: 'mysql:8.0',
+        name: `mysql-db-${Date.now()}`,
+        Env: ['MYSQL_ROOT_PASSWORD=root_secret_123', 'MYSQL_DATABASE=jacare_db', 'MYSQL_USER=jacare', 'MYSQL_PASSWORD=jacare_secret_123'],
+        HostConfig: {
+          PortBindings: { '3306/tcp': [{ HostPort: '3306' }] },
+          RestartPolicy: { Name: 'always' }
+        }
+      });
+      await container.start();
+      return res.json({ success: true, message: 'MySQL 8.0 iniciado na porta 3306!' });
+    }
+
+    if (type === 'nginx') {
+      const container = await docker.createContainer({
+        Image: 'nginx:alpine',
+        name: `nginx-web-${Date.now()}`,
+        HostConfig: {
+          PortBindings: { '80/tcp': [{ HostPort: '8080' }] },
+          RestartPolicy: { Name: 'always' }
+        }
+      });
+      await container.start();
+      return res.json({ success: true, message: 'Nginx Web Server iniciado na porta 8080!' });
+    }
+
+    if (type === 'redis') {
+      const container = await docker.createContainer({
+        Image: 'redis:alpine',
+        name: `redis-cache-${Date.now()}`,
+        HostConfig: {
+          PortBindings: { '6379/tcp': [{ HostPort: '6379' }] },
+          RestartPolicy: { Name: 'always' }
+        }
+      });
+      await container.start();
+      return res.json({ success: true, message: 'Redis Cache iniciado na porta 6379!' });
+    }
+
+    res.status(400).json({ error: 'Tipo de serviço não suportado' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -90,6 +90,52 @@
       </div>
     </div>
 
+    <!-- Seção de Deploy 1-Click (Estilo Easypanel) -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Deploy Rápido em 1 Clique (Estilo Easypanel)</h2>
+        <span class="badge badge-count">Serviços Prontos</span>
+      </div>
+
+      <div class="deploy-grid">
+        <div class="deploy-card">
+          <div class="deploy-icon">🌐</div>
+          <div class="deploy-info">
+            <h3>Nginx Web Server</h3>
+            <p>Servidor web leve e Proxy Reverso na porta 8080</p>
+          </div>
+          <button class="btn btn-deploy" onclick="deployService('nginx')">+ Criar Nginx</button>
+        </div>
+
+        <div class="deploy-card">
+          <div class="deploy-icon">🐘</div>
+          <div class="deploy-info">
+            <h3>PostgreSQL 16</h3>
+            <p>Banco de Dados Relacional na porta 5432</p>
+          </div>
+          <button class="btn btn-deploy" onclick="deployService('postgres')">+ Criar Postgres</button>
+        </div>
+
+        <div class="deploy-card">
+          <div class="deploy-icon">🐬</div>
+          <div class="deploy-info">
+            <h3>MySQL 8.0</h3>
+            <p>Banco de Dados MySQL na porta 3306</p>
+          </div>
+          <button class="btn btn-deploy" onclick="deployService('mysql')">+ Criar MySQL</button>
+        </div>
+
+        <div class="deploy-card">
+          <div class="deploy-icon">🔴</div>
+          <div class="deploy-info">
+            <h3>Redis Cache</h3>
+            <p>Banco em memória ultra-rápido na porta 6379</p>
+          </div>
+          <button class="btn btn-deploy" onclick="deployService('redis')">+ Criar Redis</button>
+        </div>
+      </div>
+    </section>
+
     <!-- Lista de Containers Docker -->
     <section class="section">
       <div class="section-header">
