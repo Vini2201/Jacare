@@ -3,242 +3,320 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VPS & Docker Monitor | Jacaré EC2</title>
+  <title>ScaleGrid VPS Engine | Enterprise Cloud Control</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-  <div class="app-container">
-    <!-- Header -->
-    <header class="header">
-      <div class="brand">
-        <div class="logo-icon">🐊</div>
+  <div class="app-layout">
+    <!-- Header (Sempre Visível) -->
+    <header class="top-header">
+      <div class="brand-group">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
         <div>
-          <h1>Jacaré VPS Manager</h1>
-          <span class="sub-text" id="os-info">Carregando informações da máquina...</span>
+          <h1 class="brand-title">ScaleGrid <span class="brand-badge">Engine v1.0</span></h1>
+          <span class="sub-text" id="os-info">Carregando telemetria do sistema...</span>
         </div>
       </div>
-      <div class="header-status">
-        <span class="live-dot"></span>
-        <span id="uptime-display">Uptime: --</span>
+      
+      <div class="header-telemetry">
+        <div class="telemetry-pill">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span id="uptime-display">Uptime: --</span>
+        </div>
+        <div class="telemetry-pill live-pill">
+          <span class="live-indicator"></span>
+          <span id="ip-display">IP: 13.222.3.171</span>
+        </div>
       </div>
     </header>
 
-    <!-- Cards de Métricas Principais -->
-    <div class="metrics-grid">
-      <!-- CPU Card -->
-      <div class="card metric-card">
-        <div class="card-header">
-          <span class="card-title">Uso de CPU</span>
-          <span class="card-icon">⚡</span>
-        </div>
-        <div class="metric-value-container">
-          <span class="metric-big" id="cpu-percent">0%</span>
-          <span class="metric-sub" id="cpu-cores">-- Cores</span>
-        </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" id="cpu-bar" style="width: 0%"></div>
-        </div>
-      </div>
+    <!-- Navegação por Abas (Tabs System) -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" data-tab="tab-overview">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Visão Geral</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-containers">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span>Containers & Deploy</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-domains">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>Domínios & SSL</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-files">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span>Arquivos</span>
+      </button>
+    </nav>
 
-      <!-- RAM Card -->
-      <div class="card metric-card">
-        <div class="card-header">
-          <span class="card-title">Memória RAM</span>
-          <span class="card-icon">🧠</span>
-        </div>
-        <div class="metric-value-container">
-          <span class="metric-big" id="ram-percent">0%</span>
-          <span class="metric-sub" id="ram-usage">0 GB / 0 GB</span>
-        </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill ram-color" id="ram-bar" style="width: 0%"></div>
-        </div>
-      </div>
-
-      <!-- Swap Card -->
-      <div class="card metric-card">
-        <div class="card-header">
-          <span class="card-title">SWAP (RAM Virtual)</span>
-          <span class="card-icon">💾</span>
-        </div>
-        <div class="metric-value-container">
-          <span class="metric-big" id="swap-usage">0 GB</span>
-          <span class="metric-sub" id="swap-total">de 0 GB</span>
-        </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill swap-color" id="swap-bar" style="width: 0%"></div>
-        </div>
-      </div>
-
-      <!-- Disco Card -->
-      <div class="card metric-card">
-        <div class="card-header">
-          <span class="card-title">Armazenamento (Disco)</span>
-          <span class="card-icon">💽</span>
-        </div>
-        <div class="metric-value-container">
-          <span class="metric-big" id="disk-percent">0%</span>
-          <span class="metric-sub" id="disk-usage">0 GB / 0 GB</span>
-        </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill disk-color" id="disk-bar" style="width: 0%"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Seção de Deploy 1-Click (Estilo Easypanel) -->
-    <section class="section">
-      <div class="section-header">
-        <h2>Deploy Rápido em 1 Clique (Estilo Easypanel)</h2>
-        <span class="badge badge-count">Serviços Prontos</span>
-      </div>
-
-      <div class="deploy-grid">
-        <div class="deploy-card">
-          <div class="deploy-icon">✈️</div>
-          <div class="deploy-info">
-            <h3>Telegram MTProto Service</h3>
-            <p>Serviço ultraleve (GramJS/Node) para automação de mensagens no Telegram na porta 4000</p>
+    <!-- Conteúdo das Abas -->
+    <main class="tab-content-container">
+      
+      <!-- ABA 1: VISÃO GERAL -->
+      <div class="tab-pane active" id="tab-overview">
+        <div class="metrics-grid">
+          <!-- CPU Card -->
+          <div class="card metric-card">
+            <div class="card-header">
+              <span class="card-title">Uso de CPU</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-green"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div class="metric-value-container">
+              <span class="metric-big" id="cpu-percent">0%</span>
+              <span class="metric-sub" id="cpu-cores">-- Cores</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill fill-green" id="cpu-bar" style="width: 0%"></div>
+            </div>
           </div>
-          <button class="btn btn-deploy" onclick="deployService('telegram')">+ Criar Telegram Service</button>
-        </div>
 
-        <div class="deploy-card">
-          <div class="deploy-icon">🌐</div>
-          <div class="deploy-info">
-            <h3>Nginx Web Server</h3>
-            <p>Servidor web leve e Proxy Reverso na porta 8080</p>
+          <!-- RAM Card -->
+          <div class="card metric-card">
+            <div class="card-header">
+              <span class="card-title">Memória RAM</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-blue"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+            </div>
+            <div class="metric-value-container">
+              <span class="metric-big" id="ram-percent">0%</span>
+              <span class="metric-sub" id="ram-usage">0 GB / 0 GB</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill fill-blue" id="ram-bar" style="width: 0%"></div>
+            </div>
           </div>
-          <button class="btn btn-deploy" onclick="deployService('nginx')">+ Criar Nginx</button>
-        </div>
 
-        <div class="deploy-card">
-          <div class="deploy-icon">🐘</div>
-          <div class="deploy-info">
-            <h3>PostgreSQL 16</h3>
-            <p>Banco de Dados Relacional na porta 5432</p>
+          <!-- SWAP Card -->
+          <div class="card metric-card">
+            <div class="card-header">
+              <span class="card-title">SWAP (Virtual RAM)</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-purple"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </div>
+            <div class="metric-value-container">
+              <span class="metric-big" id="swap-usage">0 GB</span>
+              <span class="metric-sub" id="swap-total">de 0 GB</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill fill-purple" id="swap-bar" style="width: 0%"></div>
+            </div>
           </div>
-          <button class="btn btn-deploy" onclick="deployService('postgres')">+ Criar Postgres</button>
-        </div>
 
-        <div class="deploy-card">
-          <div class="deploy-icon">🐬</div>
-          <div class="deploy-info">
-            <h3>MySQL 8.0</h3>
-            <p>Banco de Dados MySQL na porta 3306</p>
+          <!-- Disco Card -->
+          <div class="card metric-card">
+            <div class="card-header">
+              <span class="card-title">Armazenamento</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-amber"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+            </div>
+            <div class="metric-value-container">
+              <span class="metric-big" id="disk-percent">0%</span>
+              <span class="metric-sub" id="disk-usage">0 GB / 0 GB</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill fill-amber" id="disk-bar" style="width: 0%"></div>
+            </div>
           </div>
-          <button class="btn btn-deploy" onclick="deployService('mysql')">+ Criar MySQL</button>
         </div>
+      </div>
 
-        <div class="deploy-card">
-          <div class="deploy-icon">🔴</div>
-          <div class="deploy-info">
-            <h3>Redis Cache</h3>
-            <p>Banco em memória ultra-rápido na porta 6379</p>
+      <!-- ABA 2: CONTAINERS & DEPLOY -->
+      <div class="tab-pane" id="tab-containers">
+        <section class="section-block">
+          <div class="section-title-bar">
+            <h2>Deploy em 1 Clique</h2>
+            <span class="section-tag">Marketplace</span>
           </div>
-          <button class="btn btn-deploy" onclick="deployService('redis')">+ Criar Redis</button>
-        </div>
-      </div>
-    </section>
 
-    <!-- 🌐 Seção 3: Gerenciador de Domínios & SSL Grátis -->
-    <section class="section">
-      <div class="section-header">
-        <h2>🌐 Gerenciador de Domínios & SSL Grátis (Let's Encrypt)</h2>
-        <span class="badge badge-count">SSL Proxy</span>
+          <div class="deploy-cards-grid">
+            <!-- Telegram MTProto -->
+            <div class="deploy-card">
+              <div class="deploy-card-head">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-blue"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                <h3>Telegram MTProto</h3>
+              </div>
+              <p>Microserviço GramJS para automação de mensagens no Telegram via API.</p>
+              <button class="btn btn-primary btn-block" onclick="deployService('telegram')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                + Criar
+              </button>
+            </div>
+
+            <!-- Nginx -->
+            <div class="deploy-card">
+              <div class="deploy-card-head">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-green"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <h3>Nginx Proxy</h3>
+              </div>
+              <p>Servidor web ultraleve e roteador de tráfego proxy reverso na porta 8080.</p>
+              <button class="btn btn-primary btn-block" onclick="deployService('nginx')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                + Criar
+              </button>
+            </div>
+
+            <!-- PostgreSQL -->
+            <div class="deploy-card">
+              <div class="deploy-card-head">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-blue"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                <h3>PostgreSQL 16</h3>
+              </div>
+              <p>Banco de dados relacional enterprise pronto para produção na porta 5432.</p>
+              <button class="btn btn-primary btn-block" onclick="deployService('postgres')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                + Criar
+              </button>
+            </div>
+
+            <!-- MySQL -->
+            <div class="deploy-card">
+              <div class="deploy-card-head">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-amber"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                <h3>MySQL 8.0</h3>
+              </div>
+              <p>Gerenciador de banco de dados relacional performático na porta 3306.</p>
+              <button class="btn btn-primary btn-block" onclick="deployService('mysql')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                + Criar
+              </button>
+            </div>
+
+            <!-- Redis -->
+            <div class="deploy-card">
+              <div class="deploy-card-head">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-red"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                <h3>Redis Cache</h3>
+              </div>
+              <p>Armazenamento em memória para dados de alta velocidade na porta 6379.</p>
+              <button class="btn btn-primary btn-block" onclick="deployService('redis')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                + Criar
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-block">
+          <div class="section-title-bar">
+            <h2>Containers Rodando</h2>
+            <span class="count-badge" id="container-count">0 Ativos</span>
+          </div>
+
+          <div class="data-card-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Nome do Container</th>
+                  <th>Imagem</th>
+                  <th>Mapeamento de Portas</th>
+                  <th style="text-align: right;">Ações de Controle</th>
+                </tr>
+              </thead>
+              <tbody id="containers-list">
+                <tr>
+                  <td colspan="5" class="empty-row">Coletando estado dos containers...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
 
-      <div class="card domain-card">
-        <form id="domain-form" class="domain-form" onsubmit="addDomain(event)">
-          <input type="text" id="domain-input" placeholder="Ex: api.seudominio.com" required class="input-field">
-          <input type="number" id="port-input" placeholder="Porta do Container (Ex: 4000)" required class="input-field">
-          <button type="submit" class="btn btn-deploy">🔒 Apontar Domínio & Gerar SSL</button>
-        </form>
+      <!-- ABA 3: DOMÍNIOS & SSL -->
+      <div class="tab-pane" id="tab-domains">
+        <section class="section-block">
+          <div class="section-title-bar">
+            <h2>Apontamento de Domínios & SSL Automatizado</h2>
+          </div>
 
-        <table class="table" style="margin-top: 1.5rem;">
-          <thead>
-            <tr>
-              <th>Domínio</th>
-              <th>Porta Container</th>
-              <th>Status SSL</th>
-              <th>Data</th>
-            </tr>
-          </thead>
-          <tbody id="domains-list">
-            <tr>
-              <td colspan="4" class="empty-state">Nenhum domínio configurado ainda.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+          <div class="card form-card">
+            <form id="domain-form" class="inline-form" onsubmit="addDomain(event)">
+              <div class="form-group">
+                <label>Endereço de Domínio / Subdomínio</label>
+                <input type="text" id="domain-input" placeholder="ex: api.meusite.com" required class="form-input">
+              </div>
 
-    <!-- 📁 Seção 2: Gerenciador de Arquivos Simples -->
-    <section class="section">
-      <div class="section-header">
-        <h2>📁 Gerenciador de Arquivos da VPS</h2>
-        <span class="badge badge-count" id="current-folder-display">/app</span>
-      </div>
+              <div class="form-group" style="max-width: 200px;">
+                <label>Porta do Container</label>
+                <input type="number" id="port-input" placeholder="ex: 4000" required class="form-input">
+              </div>
 
-      <div class="card containers-table-card">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Tipo</th>
-              <th>Nome do Arquivo / Pasta</th>
-              <th>Caminho</th>
-            </tr>
-          </thead>
-          <tbody id="files-list">
-            <tr>
-              <td colspan="3" class="empty-state">Carregando arquivos da VPS...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+              <button type="submit" class="btn btn-primary" style="align-self: flex-end; height: 42px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Apontar & Gerar SSL
+              </button>
+            </form>
 
-    <!-- Lista de Containers Docker -->
-    <section class="section">
-      <div class="section-header">
-        <h2>Containers Docker Rodando</h2>
-        <span class="badge badge-count" id="container-count">0 Containers</span>
+            <table class="custom-table" style="margin-top: 1.5rem;">
+              <thead>
+                <tr>
+                  <th>Domínio Registrado</th>
+                  <th>Porta Alvo</th>
+                  <th>Certificado Let's Encrypt</th>
+                  <th>Data de Emissão</th>
+                </tr>
+              </thead>
+              <tbody id="domains-list">
+                <tr>
+                  <td colspan="4" class="empty-row">Nenhum domínio associado.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
 
-      <div class="card containers-table-card">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th>Nome</th>
-              <th>Imagem</th>
-              <th>Portas</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="containers-list">
-            <tr>
-              <td colspan="5" class="empty-state">Buscando containers Docker...</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- ABA 4: ARQUIVOS -->
+      <div class="tab-pane" id="tab-files">
+        <section class="section-block">
+          <div class="section-title-bar">
+            <h2>Explorador de Arquivos da VPS</h2>
+            <span class="path-badge" id="current-folder-display">/app</span>
+          </div>
+
+          <div class="data-card-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Nome</th>
+                  <th>Caminho Absoluto</th>
+                </tr>
+              </thead>
+              <tbody id="files-list">
+                <tr>
+                  <td colspan="3" class="empty-row">Escaneando sistema de arquivos...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
-    </section>
+
+    </main>
   </div>
 
-  <!-- Modal de Logs -->
-  <div class="modal-overlay" id="logs-modal">
-    <div class="modal">
+  <!-- Modal de Logs (Estilo Dark Terminal) -->
+  <div class="modal-backdrop" id="logs-modal">
+    <div class="modal-dialog">
       <div class="modal-header">
-        <h3 id="modal-title">Logs do Container</h3>
-        <button class="btn-close" id="btn-close-modal">&times;</button>
+        <div class="modal-title-group">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          <h3 id="modal-title">Logs de Execução</h3>
+        </div>
+        <button class="modal-close-btn" id="btn-close-modal">&times;</button>
       </div>
       <div class="modal-body">
-        <pre class="logs-viewer" id="logs-content">Carregando logs...</pre>
+        <pre class="terminal-log-output" id="logs-content">Buscando histórico de saída...</pre>
       </div>
     </div>
   </div>

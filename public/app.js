@@ -1,5 +1,17 @@
 const socket = io();
 
+// Sistema de Abas (Tabs System)
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+
+    btn.classList.add('active');
+    const tabId = btn.getAttribute('data-tab');
+    document.getElementById(tabId).classList.add('active');
+  });
+});
+
 // Elementos do DOM
 const osInfoEl = document.getElementById('os-info');
 const uptimeEl = document.getElementById('uptime-display');
@@ -41,7 +53,7 @@ function formatUptime(seconds) {
 }
 
 socket.on('metrics', (data) => {
-  osInfoEl.textContent = `${data.os.hostname} • ${data.os.distro}`;
+  osInfoEl.textContent = `Alpine Linux v3.23 | IP: 13.222.3.171`;
   uptimeEl.textContent = `Uptime: ${formatUptime(data.os.uptime)}`;
 
   cpuPercentEl.textContent = `${data.cpu.load}%`;
@@ -76,14 +88,14 @@ async function deployService(type) {
       body: JSON.stringify({ type })
     });
     const data = await res.json();
-    if (res.ok) alert(`🚀 ${data.message}`);
+    if (res.ok) alert(`${data.message}`);
     else alert(`Erro no Deploy: ${data.error}`);
   } catch (err) {
     alert(`Erro ao criar serviço: ${err.message}`);
   }
 }
 
-// 📁 Gerenciador de Arquivos
+// 📁 Gerenciador de Arquivos com Ícones SVG
 async function loadFiles(path = '/app') {
   try {
     const res = await fetch(`/api/files?path=${encodeURIComponent(path)}`);
@@ -93,15 +105,22 @@ async function loadFiles(path = '/app') {
     currentFolderDisplay.textContent = data.currentPath;
 
     if (data.files.length === 0) {
-      filesListEl.innerHTML = `<tr><td colspan="3" class="empty-state">Pasta vazia.</td></tr>`;
+      filesListEl.innerHTML = `<tr><td colspan="3" class="empty-row">Diretório vazio.</td></tr>`;
       return;
     }
 
     filesListEl.innerHTML = data.files.map(f => `
       <tr>
-        <td>${f.isDirectory ? '📁 Pasta' : '📄 Arquivo'}</td>
-        <td><span class="container-name">${f.name}</span></td>
-        <td><span class="container-image">${f.path}</span></td>
+        <td>
+          <span style="display: flex; align-items: center; gap: 0.4rem;" class="${f.isDirectory ? 'icon-accent-amber' : 'icon-accent-blue'}">
+            ${f.isDirectory 
+              ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Diretório`
+              : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> Arquivo`
+            }
+          </span>
+        </td>
+        <td><span class="cell-title">${f.name}</span></td>
+        <td><span class="cell-code">${f.path}</span></td>
       </tr>
     `).join('');
   } catch (err) {
@@ -123,7 +142,7 @@ async function addDomain(e) {
     });
     const data = await res.json();
     if (res.ok) {
-      alert(`🔒 ${data.message}`);
+      alert(`${data.message}`);
       loadDomains();
     } else {
       alert(`Erro: ${data.error}`);
@@ -139,16 +158,16 @@ async function loadDomains() {
     const domains = await res.json();
 
     if (domains.length === 0) {
-      domainsListEl.innerHTML = `<tr><td colspan="4" class="empty-state">Nenhum domínio configurado ainda.</td></tr>`;
+      domainsListEl.innerHTML = `<tr><td colspan="4" class="empty-row">Nenhum domínio configurado ainda.</td></tr>`;
       return;
     }
 
     domainsListEl.innerHTML = domains.map(d => `
       <tr>
-        <td><span class="container-name">${d.domain}</span></td>
-        <td><span class="container-image">Porta ${d.containerPort}</span></td>
-        <td><span class="status-pill status-running">${d.sslStatus}</span></td>
-        <td><span class="container-image">${new Date(d.createdAt).toLocaleDateString()}</span></td>
+        <td><span class="cell-title">${d.domain}</span></td>
+        <td><span class="cell-code">Porta ${d.containerPort}</span></td>
+        <td><span class="status-badge status-online"><span class="dot-status"></span> ${d.sslStatus}</span></td>
+        <td><span class="cell-code">${new Date(d.createdAt).toLocaleDateString()}</span></td>
       </tr>
     `).join('');
   } catch (err) {
@@ -157,35 +176,37 @@ async function loadDomains() {
 }
 
 function renderContainers(containers) {
-  containerCountEl.textContent = `${containers.length} Container${containers.length !== 1 ? 's' : ''}`;
+  containerCountEl.textContent = `${containers.length} Ativo${containers.length !== 1 ? 's' : ''}`;
 
   if (containers.length === 0) {
-    containersListEl.innerHTML = `<tr><td colspan="5" class="empty-state">Nenhum container Docker rodando no momento.</td></tr>`;
+    containersListEl.innerHTML = `<tr><td colspan="5" class="empty-row">Nenhum container Docker ativo no momento.</td></tr>`;
     return;
   }
 
   containersListEl.innerHTML = containers.map(c => {
     const isRunning = c.state === 'running';
-    const statusClass = isRunning ? 'status-running' : 'status-exited';
+    const statusClass = isRunning ? 'status-online' : 'status-offline';
     const statusText = isRunning ? 'Rodando' : 'Parado';
 
     return `
       <tr>
         <td>
-          <span class="status-pill ${statusClass}">
-            <span>${isRunning ? '●' : '○'}</span> ${statusText}
+          <span class="status-badge ${statusClass}">
+            <span class="dot-status"></span> ${statusText}
           </span>
         </td>
-        <td><span class="container-name">${c.name}</span></td>
-        <td><span class="container-image">${c.image}</span></td>
-        <td><span class="container-image">${c.ports.join(', ') || 'Nenhuma'}</span></td>
-        <td class="actions-cell">
-          ${isRunning 
-            ? `<button class="btn btn-stop" onclick="controlContainer('${c.id}', 'stop')">Parar</button>`
-            : `<button class="btn btn-start" onclick="controlContainer('${c.id}', 'start')">Iniciar</button>`
-          }
-          <button class="btn btn-logs" onclick="viewLogs('${c.id}', '${c.name}')">Logs</button>
-          <button class="btn btn-remove" onclick="controlContainer('${c.id}', 'remove')">Excluir</button>
+        <td><span class="cell-title">${c.name}</span></td>
+        <td><span class="cell-code">${c.image}</span></td>
+        <td><span class="cell-code">${c.ports.join(', ') || 'Nenhuma'}</span></td>
+        <td>
+          <div class="actions-row">
+            ${isRunning 
+              ? `<button class="btn btn-stop" onclick="controlContainer('${c.id}', 'stop')">Parar</button>`
+              : `<button class="btn btn-start" onclick="controlContainer('${c.id}', 'start')">Iniciar</button>`
+            }
+            <button class="btn btn-logs" onclick="viewLogs('${c.id}', '${c.name}')">Logs</button>
+            <button class="btn btn-delete" onclick="controlContainer('${c.id}', 'remove')">Excluir</button>
+          </div>
         </td>
       </tr>
     `;
@@ -205,7 +226,7 @@ async function controlContainer(id, action) {
 
 async function viewLogs(id, name) {
   modalTitle.textContent = `Logs: ${name}`;
-  logsContent.textContent = 'Carregando logs do container...';
+  logsContent.textContent = 'Buscando histórico de saída...';
   logsModal.classList.add('active');
 
   try {
@@ -220,6 +241,6 @@ async function viewLogs(id, name) {
 btnCloseModal.addEventListener('click', () => logsModal.classList.remove('active'));
 logsModal.addEventListener('click', (e) => { if (e.target === logsModal) logsModal.classList.remove('active'); });
 
-// Inicializar listagens
+// Inicialização
 loadFiles();
 loadDomains();
