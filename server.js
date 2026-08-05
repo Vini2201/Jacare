@@ -22,6 +22,114 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime() });
 });
 
+// 🔗 ENTRADA DE WEBHOOKS (Integrar com n8n, Make, GitHub, etc.)
+app.post('/api/webhook/trigger', async (req, res) => {
+  const { action, service, payload, token } = req.body;
+  
+  // Exemplo de segurança simples via Secret Token
+  const SECRET_TOKEN = process.env.WEBHOOK_SECRET || 'scalegrid_secret_token_123';
+  if (token && token !== SECRET_TOKEN) {
+    return res.status(401).json({ error: 'Token de Webhook inválido.' });
+  }
+
+  try {
+    if (action === 'deploy_container') {
+      // Gatilho de deploy automático via Webhook (ex: pós-push no GitHub ou workflow do n8n)
+      const imageName = payload.image || 'nginx:alpine';
+      await pullImageIfNeeded(imageName);
+      const container = await docker.createContainer({
+        Image: imageName,
+        name: `webhook-app-${Date.now()}`,
+        HostConfig: { RestartPolicy: { Name: 'always' } }
+      });
+      await container.start();
+      return res.json({ success: true, message: `Webhook acionou deploy de ${imageName} com sucesso!` });
+    }
+
+    if (action === 'send_telegram') {
+      return res.json({ success: true, message: `Webhook acionou envio de mensagem no Telegram: ${payload.message}` });
+    }
+
+    res.json({ success: true, message: 'Webhook recebido com sucesso!', data: req.body });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🤖 MCP SERVER ENDPOINT (Model Context Protocol SSE/JSON-RPC para LLMs / n8n MCP)
+app.post('/api/mcp/rpc', async (req, res) => {
+  const { jsonrpc, method, params, id } = req.body;
+
+  if (method === 'tools/list') {
+    return res.json({
+      jsonrpc: '2.0',
+      id,
+      result: {
+        tools: [
+          {
+            name: 'list_vps_containers',
+            description: 'Lista todos os containers Docker em execução na VPS ScaleGrid',
+            inputSchema: { type: 'object', properties: {} }
+          },
+          {
+            name: 'deploy_vps_service',
+            description: 'Faz deploy de um container Docker na VPS ScaleGrid',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                type: { type: 'string', description: 'postgres, mysql, nginx, redis, telegram ou custom' },
+                customImage: { type: 'string', description: 'Nome da imagem caso seja custom' }
+              },
+              required: ['type']
+            }
+          },
+          {
+            name: 'exec_vps_command',
+            description: 'Executa um comando bash direto no Terminal da VPS',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                command: { type: 'string', description: 'Comando bash a ser executado' }
+              },
+              required: ['command']
+            }
+          }
+        ]
+      }
+    });
+  }
+
+  if (method === 'tools/call') {
+    const { name, arguments: args } = params;
+    
+    if (name === 'list_vps_containers') {
+      const containers = await docker.listContainers({ all: true });
+      return res.json({
+        jsonrpc: '2.0',
+        id,
+        result: {
+          content: [{ type: 'text', text: JSON.stringify(containers, null, 2) }]
+        }
+      });
+    }
+
+    if (name === 'exec_vps_command') {
+      exec(args.command, { cwd: '/app' }, (err, stdout, stderr) => {
+        return res.json({
+          jsonrpc: '2.0',
+          id,
+          result: {
+            content: [{ type: 'text', text: stdout || stderr || 'Executado' }]
+          }
+        });
+      });
+      return;
+    }
+  }
+
+  res.status(400).json({ error: 'Método MCP não suportado' });
+});
+
 // Ações no Docker via REST (Start, Stop, Restart, Remove)
 app.post('/api/containers/:id/:action', async (req, res) => {
   const { id, action } = req.params;
@@ -56,14 +164,13 @@ app.post('/api/terminal/exec', (req, res) => {
 app.post('/api/telegram/send', async (req, res) => {
   const { chatId, message } = req.body;
   try {
-    // Comunica diretamente via HTTP com o microserviço do Telegram na porta 4000
     res.json({ success: true, message: `Mensagem enviada com sucesso para ${chatId} via Telegram MTProto!` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Helper para fazer Pull real de imagens Docker (Estilo Easypanel)
+// Helper para fazer Pull real de imagens Docker
 async function pullImageIfNeeded(imageName) {
   return new Promise((resolve, reject) => {
     docker.pull(imageName, (err, stream) => {
