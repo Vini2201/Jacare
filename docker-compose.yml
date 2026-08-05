@@ -6,7 +6,7 @@ services:
     container_name: vps-dashboard
     restart: always
     ports:
-      - "3000:3000"
+      - "80:3000"
     volumes:
       # Conecta ao socket do Docker da máquina hospedeira para monitorar containers
       - /var/run/docker.sock:/var/run/docker.sock
