@@ -23,6 +23,11 @@ const diskBarEl = document.getElementById('disk-bar');
 const containersListEl = document.getElementById('containers-list');
 const containerCountEl = document.getElementById('container-count');
 
+const filesListEl = document.getElementById('files-list');
+const currentFolderDisplay = document.getElementById('current-folder-display');
+
+const domainsListEl = document.getElementById('domains-list');
+
 const logsModal = document.getElementById('logs-modal');
 const modalTitle = document.getElementById('modal-title');
 const logsContent = document.getElementById('logs-content');
@@ -62,7 +67,7 @@ socket.on('metrics', (data) => {
   renderContainers(data.containers);
 });
 
-// Função para Deploy em 1 Clique (Estilo Easypanel)
+// Deploy 1-Click
 async function deployService(type) {
   try {
     const res = await fetch('/api/deploy', {
@@ -71,13 +76,83 @@ async function deployService(type) {
       body: JSON.stringify({ type })
     });
     const data = await res.json();
+    if (res.ok) alert(`🚀 ${data.message}`);
+    else alert(`Erro no Deploy: ${data.error}`);
+  } catch (err) {
+    alert(`Erro ao criar serviço: ${err.message}`);
+  }
+}
+
+// 📁 Gerenciador de Arquivos
+async function loadFiles(path = '/app') {
+  try {
+    const res = await fetch(`/api/files?path=${encodeURIComponent(path)}`);
+    const data = await res.json();
+    if (!res.ok) return;
+
+    currentFolderDisplay.textContent = data.currentPath;
+
+    if (data.files.length === 0) {
+      filesListEl.innerHTML = `<tr><td colspan="3" class="empty-state">Pasta vazia.</td></tr>`;
+      return;
+    }
+
+    filesListEl.innerHTML = data.files.map(f => `
+      <tr>
+        <td>${f.isDirectory ? '📁 Pasta' : '📄 Arquivo'}</td>
+        <td><span class="container-name">${f.name}</span></td>
+        <td><span class="container-image">${f.path}</span></td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error('Erro ao carregar arquivos:', err);
+  }
+}
+
+// 🌐 Gerenciador de Domínios
+async function addDomain(e) {
+  e.preventDefault();
+  const domain = document.getElementById('domain-input').value;
+  const containerPort = document.getElementById('port-input').value;
+
+  try {
+    const res = await fetch('/api/domains', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain, containerPort })
+    });
+    const data = await res.json();
     if (res.ok) {
-      alert(`🚀 ${data.message}`);
+      alert(`🔒 ${data.message}`);
+      loadDomains();
     } else {
-      alert(`Erro no Deploy: ${data.error}`);
+      alert(`Erro: ${data.error}`);
     }
   } catch (err) {
-    alert(`Erro ao tentar criar serviço: ${err.message}`);
+    alert(`Erro ao apontar domínio: ${err.message}`);
+  }
+}
+
+async function loadDomains() {
+  try {
+    const res = await fetch('/api/domains');
+    const domains = await res.json();
+
+    if (domains.length === 0) {
+      domainsListEl.innerHTML = `<tr><td colspan="4" class="empty-state">Nenhum domínio configurado ainda.</td></tr>`;
+      return;
+    }
+
+    domainsListEl.innerHTML = domains.map(d => `
+      <tr>
+        <td><span class="container-name">${d.domain}</span></td>
+        <td><span class="container-image">Porta ${d.containerPort}</span></td>
+        <td><span class="status-pill status-running">${d.sslStatus}</span></td>
+        <td><span class="container-image">${new Date(d.createdAt).toLocaleDateString()}</span></td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error('Erro ao carregar domínios:', err);
   }
 }
 
@@ -85,10 +160,7 @@ function renderContainers(containers) {
   containerCountEl.textContent = `${containers.length} Container${containers.length !== 1 ? 's' : ''}`;
 
   if (containers.length === 0) {
-    containersListEl.innerHTML = `
-      <tr>
-        <td colspan="5" class="empty-state">Nenhum container Docker rodando no momento.</td>
-      </tr>`;
+    containersListEl.innerHTML = `<tr><td colspan="5" class="empty-state">Nenhum container Docker rodando no momento.</td></tr>`;
     return;
   }
 
@@ -145,10 +217,9 @@ async function viewLogs(id, name) {
   }
 }
 
-btnCloseModal.addEventListener('click', () => {
-  logsModal.classList.remove('active');
-});
+btnCloseModal.addEventListener('click', () => logsModal.classList.remove('active'));
+logsModal.addEventListener('click', (e) => { if (e.target === logsModal) logsModal.classList.remove('active'); });
 
-logsModal.addEventListener('click', (e) => {
-  if (e.target === logsModal) logsModal.classList.remove('active');
-});
+// Inicializar listagens
+loadFiles();
+loadDomains();

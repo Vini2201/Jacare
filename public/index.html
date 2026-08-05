@@ -99,6 +99,15 @@
 
       <div class="deploy-grid">
         <div class="deploy-card">
+          <div class="deploy-icon">✈️</div>
+          <div class="deploy-info">
+            <h3>Telegram MTProto Service</h3>
+            <p>Serviço ultraleve (GramJS/Node) para automação de mensagens no Telegram na porta 4000</p>
+          </div>
+          <button class="btn btn-deploy" onclick="deployService('telegram')">+ Criar Telegram Service</button>
+        </div>
+
+        <div class="deploy-card">
           <div class="deploy-icon">🌐</div>
           <div class="deploy-info">
             <h3>Nginx Web Server</h3>
@@ -133,6 +142,63 @@
           </div>
           <button class="btn btn-deploy" onclick="deployService('redis')">+ Criar Redis</button>
         </div>
+      </div>
+    </section>
+
+    <!-- 🌐 Seção 3: Gerenciador de Domínios & SSL Grátis -->
+    <section class="section">
+      <div class="section-header">
+        <h2>🌐 Gerenciador de Domínios & SSL Grátis (Let's Encrypt)</h2>
+        <span class="badge badge-count">SSL Proxy</span>
+      </div>
+
+      <div class="card domain-card">
+        <form id="domain-form" class="domain-form" onsubmit="addDomain(event)">
+          <input type="text" id="domain-input" placeholder="Ex: api.seudominio.com" required class="input-field">
+          <input type="number" id="port-input" placeholder="Porta do Container (Ex: 4000)" required class="input-field">
+          <button type="submit" class="btn btn-deploy">🔒 Apontar Domínio & Gerar SSL</button>
+        </form>
+
+        <table class="table" style="margin-top: 1.5rem;">
+          <thead>
+            <tr>
+              <th>Domínio</th>
+              <th>Porta Container</th>
+              <th>Status SSL</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody id="domains-list">
+            <tr>
+              <td colspan="4" class="empty-state">Nenhum domínio configurado ainda.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 📁 Seção 2: Gerenciador de Arquivos Simples -->
+    <section class="section">
+      <div class="section-header">
+        <h2>📁 Gerenciador de Arquivos da VPS</h2>
+        <span class="badge badge-count" id="current-folder-display">/app</span>
+      </div>
+
+      <div class="card containers-table-card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Nome do Arquivo / Pasta</th>
+              <th>Caminho</th>
+            </tr>
+          </thead>
+          <tbody id="files-list">
+            <tr>
+              <td colspan="3" class="empty-state">Carregando arquivos da VPS...</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 

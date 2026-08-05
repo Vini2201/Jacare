@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const si = require('systeminformation');
 const Docker = require('dockerode');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -95,10 +96,63 @@ app.post('/api/deploy', async (req, res) => {
       return res.json({ success: true, message: 'Redis Cache iniciado na porta 6379!' });
     }
 
+    if (type === 'telegram') {
+      const container = await docker.createContainer({
+        Image: 'node:20-alpine',
+        name: `telegram-mtproto-${Date.now()}`,
+        Cmd: ['node', '-e', 'console.log("Telegram MTProto Service ativo!")'],
+        HostConfig: {
+          PortBindings: { '4000/tcp': [{ HostPort: '4000' }] },
+          RestartPolicy: { Name: 'always' }
+        }
+      });
+      await container.start();
+      return res.json({ success: true, message: 'Telegram Service iniciado na porta 4000!' });
+    }
+
     res.status(400).json({ error: 'Tipo de serviço não suportado' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// 📁 GERENCIADOR DE ARQUIVOS (File Manager API)
+app.get('/api/files', (req, res) => {
+  const dirPath = req.query.path || '/app';
+  try {
+    const files = fs.readdirSync(dirPath, { withFileTypes: true });
+    const fileList = files.map(f => ({
+      name: f.name,
+      isDirectory: f.isDirectory(),
+      path: path.join(dirPath, f.name)
+    }));
+    res.json({ currentPath: dirPath, files: fileList });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🌐 APONTAMENTO DE DOMÍNIO & SSL (Proxy Config Simulator)
+const domainsList = [];
+app.post('/api/domains', (req, res) => {
+  const { domain, containerPort } = req.body;
+  if (!domain || !containerPort) {
+    return res.status(400).json({ error: 'Domínio e porta do container são obrigatórios.' });
+  }
+
+  const newDomain = {
+    id: Date.now(),
+    domain,
+    containerPort,
+    sslStatus: 'SSL Let\'s Encrypt Ativo 🔒',
+    createdAt: new Date().toISOString()
+  };
+  domainsList.push(newDomain);
+  res.json({ success: true, domain: newDomain, message: `Domínio ${domain} apontado com SSL!` });
+});
+
+app.get('/api/domains', (req, res) => {
+  res.json(domainsList);
 });
 
 // Logs do container

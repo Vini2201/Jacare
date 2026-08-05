@@ -171,7 +171,6 @@ body {
 .swap-color { background: linear-gradient(90deg, #a371f7, #bc8cff); }
 .disk-color { background: linear-gradient(90deg, #d29922, #e3b341); }
 
-/* Deploy Cards (Estilo Easypanel) */
 .section {
   margin-bottom: 2.5rem;
 }
@@ -221,11 +220,34 @@ body {
   border: none;
   font-weight: 600;
   padding: 0.6rem 1rem;
-  width: 100%;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 .btn-deploy:hover {
   background: #2188ff;
+}
+
+.domain-form {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.input-field {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  flex-grow: 1;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent-blue);
 }
 
 .btn-remove {
