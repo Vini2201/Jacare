@@ -175,6 +175,48 @@ body {
   display: block;
 }
 
+/* Terminal Console Styles */
+.terminal-console-window {
+  background: #040d21;
+  border: 1px solid var(--border-dim);
+  border-radius: 12px;
+  padding: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: #388bfd;
+}
+
+.terminal-output-body {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.terminal-input-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 1px solid var(--border-dim);
+  padding-top: 0.75rem;
+}
+
+.prompt-symbol {
+  color: var(--accent-green);
+  font-weight: 600;
+}
+
+.terminal-cmd-input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  flex-grow: 1;
+  outline: none;
+}
+
 /* Cards & Grid */
 .metrics-grid {
   display: grid;

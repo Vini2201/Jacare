@@ -50,13 +50,21 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
         <span>Containers & Deploy</span>
       </button>
+      <button class="tab-btn" data-tab="tab-telegram">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        <span>Telegram Automação</span>
+      </button>
       <button class="tab-btn" data-tab="tab-domains">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
         <span>Domínios & SSL</span>
       </button>
       <button class="tab-btn" data-tab="tab-files">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        <span>Explorador de Arquivos (Drive)</span>
+        <span>Arquivos (Drive)</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-terminal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        <span>Terminal SSH</span>
       </button>
     </nav>
 
@@ -128,9 +136,8 @@
         </div>
       </div>
 
-      <!-- ABA 2: CONTAINERS & DEPLOY (Estilo Easypanel com Docker Pull Real) -->
+      <!-- ABA 2: CONTAINERS & DEPLOY -->
       <div class="tab-pane" id="tab-containers">
-        <!-- Formulário para Puxar Qualquer Imagem Customizada -->
         <section class="section-block">
           <div class="section-title-bar">
             <h2>Puxar Imagem Customizada (Docker Hub)</h2>
@@ -150,7 +157,6 @@
           </div>
         </section>
 
-        <!-- Marketplace 1-Click -->
         <section class="section-block">
           <div class="section-title-bar">
             <h2>Deploy em 1 Clique (Imagens Oficiais)</h2>
@@ -225,7 +231,7 @@
           </div>
         </section>
 
-        <!-- Containers Rodando -->
+        <!-- Containers Rodando com Botão de Reiniciar -->
         <section class="section-block">
           <div class="section-title-bar">
             <h2>Containers Rodando</h2>
@@ -249,6 +255,38 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- ABA TELEGRAM AUTOMATION -->
+      <div class="tab-pane" id="tab-telegram">
+        <section class="section-block">
+          <div class="section-title-bar">
+            <h2>Painel de Controle: Telegram MTProto Service</h2>
+            <span class="status-badge status-online"><span class="dot-status"></span> Porta 4000 Ativa</span>
+          </div>
+
+          <div class="card form-card">
+            <p style="color: var(--text-secondary); margin-bottom: 1.25rem; font-size: 0.9rem;">
+              Envie mensagens e comandos diretamente para grupos ou usuários do Telegram através do microserviço em execução.
+            </p>
+            <form id="telegram-form" class="inline-form" onsubmit="sendTelegramMessage(event)">
+              <div class="form-group">
+                <label>ID do Chat / Username / Canal</label>
+                <input type="text" id="telegram-chat-id" placeholder="ex: @canal_promos ou 123456789" required class="form-input">
+              </div>
+
+              <div class="form-group" style="flex-grow: 2;">
+                <label>Mensagem a ser enviada</label>
+                <input type="text" id="telegram-message-input" placeholder="Digite a mensagem de teste ou promoção..." required class="form-input">
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="height: 42px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Enviar Mensagem
+              </button>
+            </form>
           </div>
         </section>
       </div>
@@ -331,6 +369,30 @@
         </section>
       </div>
 
+      <!-- ABA 5: TERMINAL WEB SSH -->
+      <div class="tab-pane" id="tab-terminal">
+        <section class="section-block">
+          <div class="section-title-bar">
+            <h2>Terminal Linux no Navegador (Web SSH Console)</h2>
+            <span class="path-badge">bash - ubuntu@ec2</span>
+          </div>
+
+          <div class="card form-card">
+            <div class="terminal-console-window">
+              <div id="terminal-output" class="terminal-output-body">
+                <div>ScaleGrid Web SSH Terminal v1.0</div>
+                <div>Digite os comandos bash diretamente na EC2 abaixo:</div>
+                <br>
+              </div>
+              <div class="terminal-input-line">
+                <span class="prompt-symbol">ubuntu@ec2:~$</span>
+                <input type="text" id="terminal-input" class="terminal-cmd-input" placeholder="ex: docker ps, ls -la, htop..." onkeydown="handleTerminalCommand(event)">
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
     </main>
   </div>
 
@@ -354,7 +416,7 @@
     </div>
   </div>
 
-  <!-- Modal de Logs (Estilo Dark Terminal) -->
+  <!-- Modal de Logs -->
   <div class="modal-backdrop" id="logs-modal">
     <div class="modal-dialog">
       <div class="modal-header">

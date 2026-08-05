@@ -53,6 +53,8 @@ const fileEditorModal = document.getElementById('file-editor-modal');
 const editorFileTitle = document.getElementById('editor-file-title');
 const fileEditorContent = document.getElementById('file-editor-content');
 
+const terminalOutput = document.getElementById('terminal-output');
+
 function formatUptime(seconds) {
   const d = Math.floor(seconds / (3600 * 24));
   const h = Math.floor((seconds % (3600 * 24)) / 3600);
@@ -122,6 +124,57 @@ async function deployCustomImage(e) {
   } catch (err) {
     alert(`Erro ao puxar imagem: ${err.message}`);
   }
+}
+
+// 📱 Painel de Automação Telegram
+async function sendTelegramMessage(e) {
+  e.preventDefault();
+  const chatId = document.getElementById('telegram-chat-id').value;
+  const message = document.getElementById('telegram-message-input').value;
+
+  try {
+    const res = await fetch('/api/telegram/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chatId, message })
+    });
+    const data = await res.json();
+    if (res.ok) alert(`✅ ${data.message}`);
+    else alert(`Erro ao enviar: ${data.error}`);
+  } catch (err) {
+    alert(`Erro de comunicação com o Telegram: ${err.message}`);
+  }
+}
+
+// 🖥️ Terminal Web SSH (Comandos Bash)
+async function handleTerminalCommand(e) {
+  if (e.key === 'Enter') {
+    const input = document.getElementById('terminal-input');
+    const command = input.value.trim();
+    if (!command) return;
+
+    appendTerminalOutput(`ubuntu@ec2:~$ ${command}`);
+    input.value = '';
+
+    try {
+      const res = await fetch('/api/terminal/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command })
+      });
+      const data = await res.json();
+      appendTerminalOutput(data.output || data.error);
+    } catch (err) {
+      appendTerminalOutput(`Erro ao executar comando: ${err.message}`);
+    }
+  }
+}
+
+function appendTerminalOutput(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  terminalOutput.appendChild(div);
+  terminalOutput.scrollTop = terminalOutput.scrollHeight;
 }
 
 // 📁 GERENCIADOR DE ARQUIVOS ESTILO GOOGLE DRIVE
@@ -289,6 +342,7 @@ function renderContainers(containers) {
               ? `<button class="btn btn-stop" onclick="controlContainer('${c.id}', 'stop')">Parar</button>`
               : `<button class="btn btn-start" onclick="controlContainer('${c.id}', 'start')">Iniciar</button>`
             }
+            <button class="btn btn-start" onclick="controlContainer('${c.id}', 'restart')">Reiniciar</button>
             <button class="btn btn-logs" onclick="viewLogs('${c.id}', '${c.name}')">Logs</button>
             <button class="btn btn-delete" onclick="controlContainer('${c.id}', 'remove')">Excluir</button>
           </div>

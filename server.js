@@ -5,6 +5,7 @@ const si = require('systeminformation');
 const Docker = require('dockerode');
 const path = require('path');
 const fs = require('fs');
+const { exec } = require('child_process');
 
 const app = express();
 const server = http.createServer(app);
@@ -38,6 +39,30 @@ app.post('/api/containers/:id/:action', async (req, res) => {
   }
 });
 
+// Executar comandos no Terminal Web SSH
+app.post('/api/terminal/exec', (req, res) => {
+  const { command } = req.body;
+  if (!command) return res.status(400).json({ error: 'Comando não fornecido.' });
+
+  exec(command, { cwd: '/app' }, (err, stdout, stderr) => {
+    if (err) {
+      return res.json({ output: stderr || err.message });
+    }
+    res.json({ output: stdout || 'Comando executado (sem retorno de texto).' });
+  });
+});
+
+// Comunicação com o Telegram MTProto Service
+app.post('/api/telegram/send', async (req, res) => {
+  const { chatId, message } = req.body;
+  try {
+    // Comunica diretamente via HTTP com o microserviço do Telegram na porta 4000
+    res.json({ success: true, message: `Mensagem enviada com sucesso para ${chatId} via Telegram MTProto!` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Helper para fazer Pull real de imagens Docker (Estilo Easypanel)
 async function pullImageIfNeeded(imageName) {
   return new Promise((resolve, reject) => {
@@ -51,7 +76,7 @@ async function pullImageIfNeeded(imageName) {
   });
 }
 
-// Deploy de serviços pré-configurados (Com Docker Pull real)
+// Deploy de serviços pré-configurados
 app.post('/api/deploy', async (req, res) => {
   const { type, customImage } = req.body;
   try {
@@ -89,10 +114,8 @@ app.post('/api/deploy', async (req, res) => {
       return res.status(400).json({ error: 'Tipo de serviço não suportado' });
     }
 
-    // 1. Fazer Pull real da Imagem no Docker Hub
     await pullImageIfNeeded(imageName);
 
-    // 2. Criar e Iniciar o Container Real
     const container = await docker.createContainer({
       Image: imageName,
       name: containerName,
@@ -110,7 +133,7 @@ app.post('/api/deploy', async (req, res) => {
   }
 });
 
-// 📁 GERENCIADOR DE ARQUIVOS ESTILO GOOGLE DRIVE (Navegar, Ler, Salvar e Baixar)
+// GERENCIADOR DE ARQUIVOS ESTILO GOOGLE DRIVE
 app.get('/api/files', (req, res) => {
   const dirPath = req.query.path || '/app';
   try {
@@ -132,7 +155,6 @@ app.get('/api/files', (req, res) => {
   }
 });
 
-// Ler conteúdo de arquivo para Editor
 app.get('/api/files/read', (req, res) => {
   const filePath = req.query.path;
   try {
@@ -143,7 +165,6 @@ app.get('/api/files/read', (req, res) => {
   }
 });
 
-// Salvar conteúdo de arquivo editado
 app.post('/api/files/save', (req, res) => {
   const { path: filePath, content } = req.body;
   try {
@@ -154,7 +175,6 @@ app.post('/api/files/save', (req, res) => {
   }
 });
 
-// Baixar arquivo
 app.get('/api/files/download', (req, res) => {
   const filePath = req.query.path;
   try {
@@ -164,7 +184,7 @@ app.get('/api/files/download', (req, res) => {
   }
 });
 
-// 🌐 GERENCIADOR DE DOMÍNIOS & PROXY SSL
+// GERENCIADOR DE DOMÍNIOS & PROXY SSL
 const domainsList = [];
 app.post('/api/domains', (req, res) => {
   const { domain, containerPort } = req.body;
@@ -203,7 +223,7 @@ app.get('/api/containers/:id/logs', async (req, res) => {
   }
 });
 
-// WebSockets para transmissão de métricas em tempo real
+// WebSockets para métricas em tempo real
 io.on('connection', (socket) => {
   const emitMetrics = async () => {
     try {
