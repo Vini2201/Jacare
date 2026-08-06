@@ -1,0 +1,17 @@
+﻿export default function Page() {
+  return (
+    <div className="p-8">
+      <div className="max-w-3xl rounded-2xl border border-rule bg-panel p-8 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-[0.3em] opacity-50 mb-3">Admin</p>
+        <h1 className="text-3xl font-bold mb-3">Eventos em Tempo Real</h1>
+        <p className="opacity-70 leading-relaxed mb-6">
+          O fluxo de eventos ainda está sendo consolidado. Esta tela serve como ponto de entrada para um feed ao vivo de ações do sistema, alertas e tarefas da fila.
+        </p>
+        <div className="rounded-xl border border-rule bg-background p-4 text-sm opacity-70">
+          Próximo passo recomendado: conectar um stream de eventos ou polling do `admin_events`.
+        </div>
+      </div>
+    </div>
+  );
+}
+

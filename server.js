@@ -6,6 +6,8 @@ const Docker = require('dockerode');
 const path = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
+const { OpenAI } = require('openai');
+const Groq = require('groq-sdk');
 
 const app = express();
 const server = http.createServer(app);
@@ -14,193 +16,309 @@ const io = new Server(server);
 // Conecta ao socket do Docker da hospedeira (/var/run/docker.sock)
 const docker = new Docker({ socketPath: process.env.DOCKER_SOCKET || '/var/run/docker.sock' });
 
-// 🔒 SISTEMA DE AUTENTICAÇÃO (PROTEÇÃO DO PAINEL)
-// As credenciais reais vem APENAS da máquina (env var da EC2), sem expor no GitHub!
+// Garantir a existência de uma rede interna compartilhada no Docker
+async function ensureNetwork() {
+  try {
+    const networks = await docker.listNetworks();
+    const exists = networks.some(n => n.Name === 'jacare-network');
+    if (!exists) {
+      await docker.createNetwork({ Name: 'jacare-network', Driver: 'bridge' });
+      console.log('✅ Rede Docker jacare-network criada com sucesso!');
+    }
+  } catch (err) {
+    console.error('Erro ao verificar/criar rede docker:', err.message);
+  }
+}
+ensureNetwork();
+
+// 🔒 AUTENTICAÇÃO BÁSICA DO PAINEL
 const DASHBOARD_USER = process.env.DASHBOARD_USER || 'admin';
 const DASHBOARD_PASS = process.env.DASHBOARD_PASS || 'scalegrid_secret_pass';
 
 const basicAuthMiddleware = (req, res, next) => {
-  // Permite acesso livre para a rota de healthcheck e webhooks autenticados por token
   if (req.path === '/api/health' || req.path === '/api/webhook/trigger' || req.path === '/api/mcp/rpc') {
     return next();
   }
 
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    res.setHeader('WWW-Authenticate', 'Basic realm="ScaleGrid VPS Engine Access"');
+    res.setHeader('WWW-Authenticate', 'Basic realm="Jacare Engine Access"');
     return res.status(401).send('Acesso Negado: Autenticação requerida.');
   }
 
   const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-  const user = auth[0];
-  const pass = auth[1];
-
-  if (user === DASHBOARD_USER && pass === DASHBOARD_PASS) {
+  if (auth[0] === DASHBOARD_USER && auth[1] === DASHBOARD_PASS) {
     return next();
   }
 
-  res.setHeader('WWW-Authenticate', 'Basic realm="ScaleGrid VPS Engine Access"');
-  return res.status(401).send('Acesso Negado: Usuário ou Senha incorretos.');
+  res.setHeader('WWW-Authenticate', 'Basic realm="Jacare Engine Access"');
+  return res.status(401).send('Acesso Negado: Credenciais incorretas.');
 };
 
-// Aplica a proteção em todas as rotas do painel
 app.use(basicAuthMiddleware);
-
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// Rota de Healthcheck
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', uptime: process.uptime() });
-});
+// 🤖 CONFIGURAÇÃO DO AGENTE DE IA (HERMES / JACARÉ AGENT)
+let aiConfig = {
+  provider: process.env.AI_PROVIDER || 'groq', // 'groq', 'openai', 'openrouter', 'ollama'
+  apiKey: process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY || '',
+  model: process.env.AI_MODEL || 'llama-3.3-70b-versatile',
+  baseUrl: process.env.AI_BASE_URL || ''
+};
 
-// 🔗 ENTRADA DE WEBHOOKS (Integrar com n8n, Make, GitHub, etc.)
-app.post('/api/webhook/trigger', async (req, res) => {
-  const { action, service, payload, token } = req.body;
-  
-  const SECRET_TOKEN = process.env.WEBHOOK_SECRET || 'scalegrid_secret_token_123';
-  if (token && token !== SECRET_TOKEN) {
-    return res.status(401).json({ error: 'Token de Webhook inválido.' });
+// Retorna cliente da IA apropriado
+function getAiClient() {
+  if (!aiConfig.apiKey && aiConfig.provider !== 'ollama') {
+    return null;
   }
+  if (aiConfig.provider === 'groq') {
+    return new Groq({ apiKey: aiConfig.apiKey });
+  }
+  const baseURL = aiConfig.baseUrl || (
+    aiConfig.provider === 'openrouter' ? 'https://openrouter.ai/api/v1' :
+    aiConfig.provider === 'ollama' ? 'http://localhost:11434/v1' : undefined
+  );
+  return new OpenAI({ apiKey: aiConfig.apiKey || 'ollama', baseURL });
+}
 
+// 🛠️ FERRAMENTAS DO AGENTE (TOOLS CALLED BY THE LLM)
+const AGENT_TOOLS = [
+  {
+    type: 'function',
+    function: {
+      name: 'list_containers',
+      description: 'Lista todos os containers Docker rodando na VPS com portas e estado.',
+      parameters: { type: 'object', properties: {} }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'manage_container',
+      description: 'Inicia, para, reinicia ou deleta um container Docker pelo ID ou Nome.',
+      parameters: {
+        type: 'object',
+        properties: {
+          containerId: { type: 'string', description: 'ID ou Nome do container' },
+          action: { type: 'string', enum: ['start', 'stop', 'restart', 'remove'] }
+        },
+        required: ['containerId', 'action']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'deploy_service',
+      description: 'Cria e inicia um novo serviço/container na VPS com imagem, porta e variáveis de ambiente.',
+      parameters: {
+        type: 'object',
+        properties: {
+          image: { type: 'string', description: 'Imagem Docker (ex: postgres:16-alpine, nginx:alpine, redis:alpine)' },
+          name: { type: 'string', description: 'Nome do container' },
+          portHost: { type: 'string', description: 'Porta exposta na VPS' },
+          portContainer: { type: 'string', description: 'Porta interna do container' },
+          env: { type: 'array', items: { type: 'string' }, description: 'Variáveis de ambiente ex: ["POSTGRES_PASSWORD=secret"]' }
+        },
+        required: ['image']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'exec_bash',
+      description: 'Executa um comando Bash direto no terminal da VPS Ubuntu.',
+      parameters: {
+        type: 'object',
+        properties: {
+          command: { type: 'string', description: 'Comando bash' }
+        },
+        required: ['command']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'configure_ai',
+      description: 'Altera o provedor de IA, Chave de API ou Modelo em tempo de execução.',
+      parameters: {
+        type: 'object',
+        properties: {
+          provider: { type: 'string', enum: ['groq', 'openai', 'openrouter', 'ollama'] },
+          apiKey: { type: 'string', description: 'Nova chave API' },
+          model: { type: 'string', description: 'Nome do modelo ex: llama-3.3-70b-versatile, gpt-4o' }
+        }
+      }
+    }
+  }
+];
+
+// Executor de Tools chamado pelo LLM
+async function executeAgentTool(name, args) {
   try {
-    if (action === 'deploy_container') {
-      const imageName = payload.image || 'nginx:alpine';
-      await pullImageIfNeeded(imageName);
+    if (name === 'list_containers') {
+      const containers = await docker.listContainers({ all: true });
+      return JSON.stringify(containers.map(c => ({
+        id: c.Id.substring(0, 12),
+        name: c.Names[0]?.replace('/', ''),
+        image: c.Image,
+        state: c.State,
+        ports: c.Ports.map(p => `${p.PublicPort || ''}:${p.PrivatePort}`).join(', ')
+      })));
+    }
+
+    if (name === 'manage_container') {
+      const container = docker.getContainer(args.containerId);
+      if (args.action === 'start') await container.start();
+      if (args.action === 'stop') await container.stop();
+      if (args.action === 'restart') await container.restart();
+      if (args.action === 'remove') await container.remove({ force: true });
+      return `Container ${args.containerId} executou a ação: ${args.action} com sucesso!`;
+    }
+
+    if (name === 'deploy_service') {
+      await pullImageIfNeeded(args.image);
+      const portBindings = args.portHost && args.portContainer ? {
+        [`${args.portContainer}/tcp`]: [{ HostPort: String(args.portHost) }]
+      } : {};
+
       const container = await docker.createContainer({
-        Image: imageName,
-        name: `webhook-app-${Date.now()}`,
-        HostConfig: { RestartPolicy: { Name: 'always' } }
+        Image: args.image,
+        name: args.name || `app-${Date.now()}`,
+        Env: args.env || [],
+        HostConfig: {
+          PortBindings: portBindings,
+          NetworkMode: 'jacare-network',
+          RestartPolicy: { Name: 'always' }
+        }
       });
       await container.start();
-      return res.json({ success: true, message: `Webhook acionou deploy de ${imageName} com sucesso!` });
+      return `Novo serviço ${args.image} iniciado na porta ${args.portHost || 'interna'}!`;
     }
 
-    if (action === 'send_telegram') {
-      return res.json({ success: true, message: `Webhook acionou envio de mensagem no Telegram: ${payload.message}` });
+    if (name === 'exec_bash') {
+      return new Promise((resolve) => {
+        exec(args.command, { cwd: '/app' }, (err, stdout, stderr) => {
+          resolve(stdout || stderr || (err ? err.message : 'Comando executado.'));
+        });
+      });
     }
 
-    res.json({ success: true, message: 'Webhook recebido com sucesso!', data: req.body });
+    if (name === 'configure_ai') {
+      if (args.provider) aiConfig.provider = args.provider;
+      if (args.apiKey) aiConfig.apiKey = args.apiKey;
+      if (args.model) aiConfig.model = args.model;
+      return `Configuração de IA atualizada! Provedor: ${aiConfig.provider}, Modelo: ${aiConfig.model}`;
+    }
+
+    return 'Ferramenta desconhecida.';
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return `Erro ao executar ${name}: ${err.message}`;
   }
-});
+}
 
-// 🤖 MCP SERVER ENDPOINT
-app.post('/api/mcp/rpc', async (req, res) => {
-  const { jsonrpc, method, params, id } = req.body;
+// ROTA DO CHAT COM O JACARÉ AGENT
+app.post('/api/ai/chat', async (req, res) => {
+  const { message, history } = req.body;
+  const client = getAiClient();
 
-  if (method === 'tools/list') {
-    return res.json({
-      jsonrpc: '2.0',
-      id,
-      result: {
-        tools: [
-          {
-            name: 'list_vps_containers',
-            description: 'Lista todos os containers Docker em execução na VPS ScaleGrid',
-            inputSchema: { type: 'object', properties: {} }
-          },
-          {
-            name: 'deploy_vps_service',
-            description: 'Faz deploy de um container Docker na VPS ScaleGrid',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                type: { type: 'string', description: 'postgres, mysql, nginx, redis, telegram ou custom' },
-                customImage: { type: 'string', description: 'Nome da imagem caso seja custom' }
-              },
-              required: ['type']
-            }
-          },
-          {
-            name: 'exec_vps_command',
-            description: 'Executa um comando bash direto no Terminal da VPS',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                command: { type: 'string', description: 'Comando bash a ser executado' }
-              },
-              required: ['command']
-            }
-          }
-        ]
-      }
+  if (!client) {
+    return res.status(400).json({
+      error: 'Provedor de IA não configurado ou chave de API faltando. Envie a chave API do Groq ou OpenAI para ativar!'
     });
   }
 
-  if (method === 'tools/call') {
-    const { name, arguments: args } = params;
-    
-    if (name === 'list_vps_containers') {
-      const containers = await docker.listContainers({ all: true });
-      return res.json({
-        jsonrpc: '2.0',
-        id,
-        result: {
-          content: [{ type: 'text', text: JSON.stringify(containers, null, 2) }]
-        }
+  try {
+    const messages = [
+      {
+        role: 'system',
+        content: `Você é o Jacaré Agent (estilo Hermes Agent), o assistente agêntico encarregado de gerenciar esta VPS Linux e seus containers Docker.
+Você tem acesso direto a ferramentas para criar, modificar e parar containers, alterar configurações de porta, ler logs e executar comandos bash.
+Seja direto, proativo e execute as ações necessárias usando suas ferramentas. Responda sempre em Português do Brasil em formato Markdown limpo.`
+      },
+      ...(history || []),
+      { role: 'user', content: message }
+    ];
+
+    // Chamada inicial para o modelo
+    let response;
+    if (aiConfig.provider === 'groq') {
+      response = await client.chat.completions.create({
+        model: aiConfig.model,
+        messages,
+        tools: AGENT_TOOLS,
+        tool_choice: 'auto'
+      });
+    } else {
+      response = await client.chat.completions.create({
+        model: aiConfig.model,
+        messages,
+        tools: AGENT_TOOLS,
+        tool_choice: 'auto'
       });
     }
 
-    if (name === 'exec_vps_command') {
-      exec(args.command, { cwd: '/app' }, (err, stdout, stderr) => {
-        return res.json({
-          jsonrpc: '2.0',
-          id,
-          result: {
-            content: [{ type: 'text', text: stdout || stderr || 'Executado' }]
-          }
+    let responseMessage = response.choices[0].message;
+
+    // Se o modelo decidiu chamar ferramentas (Tool Calling)
+    if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
+      messages.push(responseMessage);
+
+      for (const toolCall of responseMessage.tool_calls) {
+        const functionName = toolCall.function.name;
+        const functionArgs = JSON.parse(toolCall.function.arguments || '{}');
+        const toolResult = await executeAgentTool(functionName, functionArgs);
+
+        messages.push({
+          tool_call_id: toolCall.id,
+          role: 'tool',
+          name: functionName,
+          content: toolResult
         });
-      });
-      return;
+      }
+
+      // Segunda chamada com o resultado da ferramenta para resposta final
+      let finalResponse;
+      if (aiConfig.provider === 'groq') {
+        finalResponse = await client.chat.completions.create({
+          model: aiConfig.model,
+          messages
+        });
+      } else {
+        finalResponse = await client.chat.completions.create({
+          model: aiConfig.model,
+          messages
+        });
+      }
+      return res.json({ reply: finalResponse.choices[0].message.content, config: { provider: aiConfig.provider, model: aiConfig.model } });
     }
-  }
 
-  res.status(400).json({ error: 'Método MCP não suportado' });
-});
-
-// Ações no Docker via REST (Start, Stop, Restart, Remove)
-app.post('/api/containers/:id/:action', async (req, res) => {
-  const { id, action } = req.params;
-  try {
-    const container = docker.getContainer(id);
-    if (action === 'start') await container.start();
-    else if (action === 'stop') await container.stop();
-    else if (action === 'restart') await container.restart();
-    else if (action === 'remove') await container.remove({ force: true });
-    else return res.status(400).json({ error: 'Ação inválida' });
-    
-    res.json({ success: true, message: `Container ${action} executado com sucesso!` });
+    return res.json({ reply: responseMessage.content, config: { provider: aiConfig.provider, model: aiConfig.model } });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Erro no Jacaré Agent:', err);
+    res.status(500).json({ error: `Erro na IA (${aiConfig.provider}): ${err.message}` });
   }
 });
 
-// Executar comandos no Terminal Web SSH
-app.post('/api/terminal/exec', (req, res) => {
-  const { command } = req.body;
-  if (!command) return res.status(400).json({ error: 'Comando não fornecido.' });
+// Configurar IA via REST
+app.post('/api/ai/config', (req, res) => {
+  const { provider, apiKey, model, baseUrl } = req.body;
+  if (provider) aiConfig.provider = provider;
+  if (apiKey) aiConfig.apiKey = apiKey;
+  if (model) aiConfig.model = model;
+  if (baseUrl !== undefined) aiConfig.baseUrl = baseUrl;
 
-  exec(command, { cwd: '/app' }, (err, stdout, stderr) => {
-    if (err) {
-      return res.json({ output: stderr || err.message });
-    }
-    res.json({ output: stdout || 'Comando executado (sem retorno de texto).' });
-  });
+  res.json({ success: true, config: { provider: aiConfig.provider, model: aiConfig.model, hasApiKey: !!aiConfig.apiKey } });
 });
 
-// Comunicação com o Telegram MTProto Service
-app.post('/api/telegram/send', async (req, res) => {
-  const { chatId, message } = req.body;
-  try {
-    res.json({ success: true, message: `Mensagem enviada com sucesso para ${chatId} via Telegram MTProto!` });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+app.get('/api/ai/config', (req, res) => {
+  res.json({ provider: aiConfig.provider, model: aiConfig.model, hasApiKey: !!aiConfig.apiKey });
 });
 
-// Helper para fazer Pull real de imagens Docker
+// Helper para fazer Pull de imagem
 async function pullImageIfNeeded(imageName) {
   return new Promise((resolve, reject) => {
     docker.pull(imageName, (err, stream) => {
@@ -213,42 +331,42 @@ async function pullImageIfNeeded(imageName) {
   });
 }
 
-// Deploy de serviços pré-configurados
+// Deploy de serviços pré-configurados (Easypanel Preset Deploy)
 app.post('/api/deploy', async (req, res) => {
-  const { type, customImage } = req.body;
+  const { type, customImage, name, portHost, portContainer, env } = req.body;
   try {
-    let imageName = '';
-    let containerName = '';
-    let envVars = [];
+    let imageName = customImage || '';
+    let containerName = name || '';
+    let envVars = env || [];
     let portBindings = {};
 
     if (type === 'postgres') {
       imageName = 'postgres:16-alpine';
-      containerName = `postgres-db-${Date.now()}`;
-      envVars = ['POSTGRES_USER=jacare', 'POSTGRES_PASSWORD=jacare_secret_123', 'POSTGRES_DB=jacare_db'];
-      portBindings = { '5432/tcp': [{ HostPort: '5432' }] };
+      containerName = name || `postgres-db-${Date.now()}`;
+      envVars = envVars.length ? envVars : ['POSTGRES_USER=jacare', 'POSTGRES_PASSWORD=jacare_secret_123', 'POSTGRES_DB=jacare_db'];
+      portBindings = { '5432/tcp': [{ HostPort: String(portHost || '5432') }] };
     } else if (type === 'mysql') {
       imageName = 'mysql:8.0';
-      containerName = `mysql-db-${Date.now()}`;
-      envVars = ['MYSQL_ROOT_PASSWORD=root_secret_123', 'MYSQL_DATABASE=jacare_db', 'MYSQL_USER=jacare', 'MYSQL_PASSWORD=jacare_secret_123'];
-      portBindings = { '3306/tcp': [{ HostPort: '3306' }] };
+      containerName = name || `mysql-db-${Date.now()}`;
+      envVars = envVars.length ? envVars : ['MYSQL_ROOT_PASSWORD=root_secret_123', 'MYSQL_DATABASE=jacare_db', 'MYSQL_USER=jacare', 'MYSQL_PASSWORD=jacare_secret_123'];
+      portBindings = { '3306/tcp': [{ HostPort: String(portHost || '3306') }] };
     } else if (type === 'nginx') {
       imageName = 'nginx:alpine';
-      containerName = `nginx-web-${Date.now()}`;
-      portBindings = { '80/tcp': [{ HostPort: '8080' }] };
+      containerName = name || `nginx-web-${Date.now()}`;
+      portBindings = { '80/tcp': [{ HostPort: String(portHost || '8080') }] };
     } else if (type === 'redis') {
       imageName = 'redis:alpine';
-      containerName = `redis-cache-${Date.now()}`;
-      portBindings = { '6379/tcp': [{ HostPort: '6379' }] };
-    } else if (type === 'telegram') {
-      imageName = 'node:20-alpine';
-      containerName = `telegram-mtproto-${Date.now()}`;
-      portBindings = { '4000/tcp': [{ HostPort: '4000' }] };
+      containerName = name || `redis-cache-${Date.now()}`;
+      portBindings = { '6379/tcp': [{ HostPort: String(portHost || '6379') }] };
+    } else if (type === 'prezzy') {
+      imageName = 'python:3.11-slim';
+      containerName = name || `prezzy-suite-${Date.now()}`;
+      portBindings = { '8000/tcp': [{ HostPort: String(portHost || '8000') }] };
     } else if (type === 'custom' && customImage) {
-      imageName = customImage;
-      containerName = `custom-app-${Date.now()}`;
-    } else {
-      return res.status(400).json({ error: 'Tipo de serviço não suportado' });
+      containerName = name || `custom-app-${Date.now()}`;
+      if (portHost && portContainer) {
+        portBindings = { [`${portContainer}/tcp`]: [{ HostPort: String(portHost) }] };
+      }
     }
 
     await pullImageIfNeeded(imageName);
@@ -259,89 +377,81 @@ app.post('/api/deploy', async (req, res) => {
       Env: envVars,
       HostConfig: {
         PortBindings: portBindings,
+        NetworkMode: 'jacare-network',
         RestartPolicy: { Name: 'always' }
       }
     });
 
     await container.start();
-    res.json({ success: true, message: `Container ${containerName} criado e iniciado com a imagem ${imageName}!` });
+    res.json({ success: true, message: `Serviço ${containerName} criado com sucesso!` });
   } catch (err) {
-    res.status(500).json({ error: `Falha ao realizar deploy/pull: ${err.message}` });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// GERENCIADOR DE ARQUIVOS ESTILO GOOGLE DRIVE
-app.get('/api/files', (req, res) => {
-  const dirPath = req.query.path || '/app';
+// Ações no Docker (Start, Stop, Restart, Remove)
+app.post('/api/containers/:id/:action', async (req, res) => {
+  const { id, action } = req.params;
   try {
-    const files = fs.readdirSync(dirPath, { withFileTypes: true });
-    const fileList = files.map(f => ({
-      name: f.name,
-      isDirectory: f.isDirectory(),
-      path: path.join(dirPath, f.name)
-    }));
-    
-    const parentPath = path.dirname(dirPath);
-    res.json({ 
-      currentPath: dirPath, 
-      parentPath: dirPath === '/' ? '/' : parentPath, 
-      files: fileList 
+    const container = docker.getContainer(id);
+    if (action === 'start') await container.start();
+    else if (action === 'stop') await container.stop();
+    else if (action === 'restart') await container.restart();
+    else if (action === 'remove') await container.remove({ force: true });
+    else return res.status(400).json({ error: 'Ação inválida' });
+
+    res.json({ success: true, message: `Container ${action} executado com sucesso!` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Alterar mapeamento de portas de um container (Stop -> Remove -> Recreate)
+app.post('/api/containers/:id/rebind-port', async (req, res) => {
+  const { id } = req.params;
+  const { newHostPort, containerPort } = req.body;
+
+  try {
+    const container = docker.getContainer(id);
+    const inspectData = await container.inspect();
+
+    const name = inspectData.Name.replace('/', '');
+    const image = inspectData.Config.Image;
+    const env = inspectData.Config.Env;
+
+    try { await container.stop(); } catch (e) {}
+    await container.remove({ force: true });
+
+    const newPortBindings = {};
+    const targetContainerPort = containerPort || Object.keys(inspectData.HostConfig.PortBindings || {})[0] || '80/tcp';
+    newPortBindings[targetContainerPort] = [{ HostPort: String(newHostPort) }];
+
+    const newContainer = await docker.createContainer({
+      Image: image,
+      name,
+      Env: env,
+      HostConfig: {
+        PortBindings: newPortBindings,
+        NetworkMode: 'jacare-network',
+        RestartPolicy: { Name: 'always' }
+      }
     });
+
+    await newContainer.start();
+    res.json({ success: true, message: `Porta do container ${name} alterada para ${newHostPort}!` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.get('/api/files/read', (req, res) => {
-  const filePath = req.query.path;
-  try {
-    const content = fs.readFileSync(filePath, 'utf-8');
-    res.json({ path: filePath, content });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// Terminal SSH Exec
+app.post('/api/terminal/exec', (req, res) => {
+  const { command } = req.body;
+  if (!command) return res.status(400).json({ error: 'Comando não fornecido.' });
 
-app.post('/api/files/save', (req, res) => {
-  const { path: filePath, content } = req.body;
-  try {
-    fs.writeFileSync(filePath, content, 'utf-8');
-    res.json({ success: true, message: 'Arquivo salvo com sucesso!' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get('/api/files/download', (req, res) => {
-  const filePath = req.query.path;
-  try {
-    res.download(filePath);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GERENCIADOR DE DOMÍNIOS & PROXY SSL
-const domainsList = [];
-app.post('/api/domains', (req, res) => {
-  const { domain, containerPort } = req.body;
-  if (!domain || !containerPort) {
-    return res.status(400).json({ error: 'Domínio e porta são obrigatórios.' });
-  }
-
-  const newDomain = {
-    id: Date.now(),
-    domain,
-    containerPort,
-    sslStatus: 'SSL Let\'s Encrypt Ativo 🔒',
-    createdAt: new Date().toISOString()
-  };
-  domainsList.push(newDomain);
-  res.json({ success: true, domain: newDomain, message: `Domínio ${domain} configurado!` });
-});
-
-app.get('/api/domains', (req, res) => {
-  res.json(domainsList);
+  exec(command, { cwd: '/app' }, (err, stdout, stderr) => {
+    res.json({ output: stdout || stderr || (err ? err.message : 'Executado.') });
+  });
 });
 
 // Logs do container
@@ -351,7 +461,7 @@ app.get('/api/containers/:id/logs', async (req, res) => {
     const logs = await container.logs({
       stdout: true,
       stderr: true,
-      tail: 100,
+      tail: 80,
       timestamps: true
     });
     res.send(logs.toString('utf-8'));
@@ -360,7 +470,7 @@ app.get('/api/containers/:id/logs', async (req, res) => {
   }
 });
 
-// WebSockets para métricas em tempo real
+// WebSockets para estatísticas estilo Easypanel
 io.on('connection', (socket) => {
   const emitMetrics = async () => {
     try {
@@ -374,15 +484,41 @@ io.on('connection', (socket) => {
 
       let containersList = [];
       try {
-        const containers = await docker.listContainers({ all: true });
-        containersList = containers.map(c => ({
-          id: c.Id.substring(0, 12),
-          name: c.Names[0] ? c.Names[0].replace('/', '') : 'Sem nome',
-          image: c.Image,
-          state: c.State,
-          status: c.Status,
-          created: c.Created,
-          ports: c.Ports.map(p => `${p.PublicPort || ''}:${p.PrivatePort}`).filter(p => p !== ':')
+        const rawContainers = await docker.listContainers({ all: true });
+        containersList = await Promise.all(rawContainers.map(async (c) => {
+          let cpuPercent = '0.0';
+          let memUsageMB = '0.0';
+          
+          if (c.State === 'running') {
+            try {
+              const containerObj = docker.getContainer(c.Id);
+              const stats = await containerObj.stats({ stream: false });
+              
+              // Cálculo de RAM em MB
+              const memoryBytes = stats.memory_stats.usage || 0;
+              memUsageMB = (memoryBytes / (1024 * 1024)).toFixed(1);
+
+              // Cálculo aproximado de CPU %
+              const cpuDelta = stats.cpu_stats.cpu_usage.total_usage - (stats.precpu_stats.cpu_usage ? stats.precpu_stats.cpu_usage.total_usage : 0);
+              const systemDelta = stats.cpu_stats.system_cpu_usage - (stats.precpu_stats.system_cpu_usage || 0);
+              const numCpus = stats.cpu_stats.online_cpus || 1;
+              if (systemDelta > 0 && cpuDelta > 0) {
+                cpuPercent = ((cpuDelta / systemDelta) * numCpus * 100).toFixed(1);
+              }
+            } catch (e) {}
+          }
+
+          return {
+            id: c.Id.substring(0, 12),
+            name: c.Names[0] ? c.Names[0].replace('/', '') : 'Sem nome',
+            image: c.Image,
+            state: c.State,
+            status: c.Status,
+            created: c.Created,
+            cpuPercent,
+            memUsageMB,
+            ports: c.Ports.map(p => `${p.PublicPort || ''}:${p.PrivatePort}`).filter(p => p !== ':')
+          };
         }));
       } catch (e) {}
 
@@ -394,32 +530,26 @@ io.on('connection', (socket) => {
         },
         cpu: {
           load: currentLoad.currentLoad.toFixed(1),
-          cores: cpu.cores,
-          brand: cpu.brand
+          cores: cpu.cores
         },
         mem: {
           total: (mem.total / (1024 * 1024 * 1024)).toFixed(2),
           used: (mem.active / (1024 * 1024 * 1024)).toFixed(2),
-          free: (mem.free / (1024 * 1024 * 1024)).toFixed(2),
-          percent: ((mem.active / mem.total) * 100).toFixed(1),
-          swapTotal: (mem.swaptotal / (1024 * 1024 * 1024)).toFixed(2),
-          swapUsed: (mem.swapused / (1024 * 1024 * 1024)).toFixed(2)
+          percent: ((mem.active / mem.total) * 100).toFixed(1)
         },
         disk: fsSize.map(d => ({
-          fs: d.fs,
-          size: (d.size / (1024 * 1024 * 1024)).toFixed(1),
-          used: (d.used / (1024 * 1024 * 1024)).toFixed(1),
           usePercent: d.use.toFixed(1),
-          mount: d.mount
+          used: (d.used / (1024 * 1024 * 1024)).toFixed(1),
+          size: (d.size / (1024 * 1024 * 1024)).toFixed(1)
         })),
         containers: containersList
       });
     } catch (error) {
-      console.error('Erro ao coletar métricas:', error);
+      console.error('Erro ao emitir métricas:', error.message);
     }
   };
 
-  const interval = setInterval(emitMetrics, 2000);
+  const interval = setInterval(emitMetrics, 3000);
   emitMetrics();
 
   socket.on('disconnect', () => {
@@ -429,5 +559,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 VPS Dashboard rodando na porta ${PORT}`);
+  console.log(`🐊 Jacaré VPS Engine & Hermes Agent rodando na porta ${PORT}`);
 });

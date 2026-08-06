@@ -1,385 +1,361 @@
 const socket = io();
 
-let currentDrivePath = '/app';
-let parentDrivePath = '/';
-let editingFilePath = '';
+// ----------------------------------------------------
+// NAVEGAÇÃO DE ABAS
+// ----------------------------------------------------
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabPanes = document.querySelectorAll('.tab-pane');
 
-// Sistema de Abas
-document.querySelectorAll('.tab-btn').forEach(btn => {
+tabButtons.forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    const targetTab = btn.getAttribute('data-tab');
+    tabButtons.forEach(b => b.classList.remove('active'));
+    tabPanes.forEach(p => p.classList.remove('active'));
 
     btn.classList.add('active');
-    const tabId = btn.getAttribute('data-tab');
-    document.getElementById(tabId).classList.add('active');
+    document.getElementById(targetTab).classList.add('active');
   });
 });
 
-// Elementos do DOM
-const osInfoEl = document.getElementById('os-info');
-const uptimeEl = document.getElementById('uptime-display');
-
-const cpuPercentEl = document.getElementById('cpu-percent');
-const cpuCoresEl = document.getElementById('cpu-cores');
-const cpuBarEl = document.getElementById('cpu-bar');
-
-const ramPercentEl = document.getElementById('ram-percent');
-const ramUsageEl = document.getElementById('ram-usage');
-const ramBarEl = document.getElementById('ram-bar');
-
-const swapUsageEl = document.getElementById('swap-usage');
-const swapTotalEl = document.getElementById('swap-total');
-const swapBarEl = document.getElementById('swap-bar');
-
-const diskPercentEl = document.getElementById('disk-percent');
-const diskUsageEl = document.getElementById('disk-usage');
-const diskBarEl = document.getElementById('disk-bar');
-
-const containersListEl = document.getElementById('containers-list');
-const containerCountEl = document.getElementById('container-count');
-
-const filesListEl = document.getElementById('files-list');
-const currentFolderDisplay = document.getElementById('current-folder-display');
-
-const domainsListEl = document.getElementById('domains-list');
-
-const logsModal = document.getElementById('logs-modal');
-const modalTitle = document.getElementById('modal-title');
-const logsContent = document.getElementById('logs-content');
-const btnCloseModal = document.getElementById('btn-close-modal');
-
-const fileEditorModal = document.getElementById('file-editor-modal');
-const editorFileTitle = document.getElementById('editor-file-title');
-const fileEditorContent = document.getElementById('file-editor-content');
-
-const terminalOutput = document.getElementById('terminal-output');
-
-function formatUptime(seconds) {
-  const d = Math.floor(seconds / (3600 * 24));
-  const h = Math.floor((seconds % (3600 * 24)) / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  return `${d > 0 ? d + 'd ' : ''}${h}h ${m}m`;
-}
-
+// ----------------------------------------------------
+// TELEMETRIA E RENDERING DE CONTAINERS (EASYPANEL STYLE)
+// ----------------------------------------------------
 socket.on('metrics', (data) => {
-  osInfoEl.textContent = `Alpine Linux v3.23 | IP: 13.222.3.171`;
-  uptimeEl.textContent = `Uptime: ${formatUptime(data.os.uptime)}`;
-
-  cpuPercentEl.textContent = `${data.cpu.load}%`;
-  cpuCoresEl.textContent = `${data.cpu.cores} Cores (${data.cpu.brand.split(' ')[0]})`;
-  cpuBarEl.style.width = `${data.cpu.load}%`;
-
-  ramPercentEl.textContent = `${data.mem.percent}%`;
-  ramUsageEl.textContent = `${data.mem.used} GB / ${data.mem.total} GB`;
-  ramBarEl.style.width = `${data.mem.percent}%`;
-
-  swapUsageEl.textContent = `${data.mem.swapUsed} GB`;
-  swapTotalEl.textContent = `de ${data.mem.swapTotal} GB`;
-  const swapPercent = data.mem.swapTotal > 0 ? ((data.mem.swapUsed / data.mem.swapTotal) * 100).toFixed(1) : 0;
-  swapBarEl.style.width = `${swapPercent}%`;
-
-  const mainDisk = data.disk.find(d => d.mount === '/') || data.disk[0];
-  if (mainDisk) {
-    diskPercentEl.textContent = `${mainDisk.usePercent}%`;
-    diskUsageEl.textContent = `${mainDisk.used} GB / ${mainDisk.size} GB`;
-    diskBarEl.style.width = `${mainDisk.usePercent}%`;
+  if (data.os) {
+    document.getElementById('os-info').innerText = `${data.os.distro} (${data.os.hostname})`;
+    const hours = Math.floor(data.os.uptime / 3600);
+    const mins = Math.floor((data.os.uptime % 3600) / 60);
+    document.getElementById('uptime-display').innerText = `Uptime: ${hours}h ${mins}m`;
   }
 
-  renderContainers(data.containers);
+  if (data.cpu) {
+    document.getElementById('cpu-percent').innerText = `${data.cpu.load}%`;
+    document.getElementById('cpu-cores').innerText = `${data.cpu.cores} Cores`;
+    document.getElementById('cpu-bar').style.width = `${Math.min(data.cpu.load, 100)}%`;
+  }
+
+  if (data.mem) {
+    document.getElementById('ram-percent').innerText = `${data.mem.percent}%`;
+    document.getElementById('ram-usage').innerText = `${data.mem.used} GB / ${data.mem.total} GB`;
+    document.getElementById('ram-bar').style.width = `${Math.min(data.mem.percent, 100)}%`;
+  }
+
+  if (data.disk && data.disk[0]) {
+    document.getElementById('disk-percent').innerText = `${data.disk[0].usePercent}%`;
+    document.getElementById('disk-usage').innerText = `${data.disk[0].used} GB / ${data.disk[0].size} GB`;
+    document.getElementById('disk-bar').style.width = `${Math.min(data.disk[0].usePercent, 100)}%`;
+  }
+
+  if (data.containers) {
+    renderEasypanelContainers(data.containers);
+  }
 });
 
-// Deploy 1-Click com Docker Pull Real
-async function deployService(type) {
-  alert('⏳ Iniciando o Pull da imagem no Docker Hub... Aguarde alguns instantes.');
-  try {
-    const res = await fetch('/api/deploy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type })
-    });
-    const data = await res.json();
-    if (res.ok) alert(`✅ ${data.message}`);
-    else alert(`Erro no Deploy: ${data.error}`);
-  } catch (err) {
-    alert(`Erro ao criar serviço: ${err.message}`);
+// Renderizar o grid de serviços no estilo Easypanel
+function renderEasypanelContainers(containers) {
+  const containerListEl = document.getElementById('easypanel-containers-list');
+  const countBadgeEl = document.getElementById('container-count');
+
+  if (countBadgeEl) {
+    countBadgeEl.innerText = `${containers.length} Ativos`;
   }
-}
 
-// Deploy de Imagem Customizada
-async function deployCustomImage(e) {
-  e.preventDefault();
-  const customImage = document.getElementById('custom-image-input').value;
-  alert(`⏳ Puxando imagem ${customImage} do Docker Hub...`);
-
-  try {
-    const res = await fetch('/api/deploy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'custom', customImage })
-    });
-    const data = await res.json();
-    if (res.ok) alert(`✅ ${data.message}`);
-    else alert(`Erro no Deploy: ${data.error}`);
-  } catch (err) {
-    alert(`Erro ao puxar imagem: ${err.message}`);
-  }
-}
-
-// 📱 Painel de Automação Telegram
-async function sendTelegramMessage(e) {
-  e.preventDefault();
-  const chatId = document.getElementById('telegram-chat-id').value;
-  const message = document.getElementById('telegram-message-input').value;
-
-  try {
-    const res = await fetch('/api/telegram/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chatId, message })
-    });
-    const data = await res.json();
-    if (res.ok) alert(`✅ ${data.message}`);
-    else alert(`Erro ao enviar: ${data.error}`);
-  } catch (err) {
-    alert(`Erro de comunicação com o Telegram: ${err.message}`);
-  }
-}
-
-// 🖥️ Terminal Web SSH (Comandos Bash)
-async function handleTerminalCommand(e) {
-  if (e.key === 'Enter') {
-    const input = document.getElementById('terminal-input');
-    const command = input.value.trim();
-    if (!command) return;
-
-    appendTerminalOutput(`ubuntu@ec2:~$ ${command}`);
-    input.value = '';
-
-    try {
-      const res = await fetch('/api/terminal/exec', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command })
-      });
-      const data = await res.json();
-      appendTerminalOutput(data.output || data.error);
-    } catch (err) {
-      appendTerminalOutput(`Erro ao executar comando: ${err.message}`);
-    }
-  }
-}
-
-function appendTerminalOutput(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  terminalOutput.appendChild(div);
-  terminalOutput.scrollTop = terminalOutput.scrollHeight;
-}
-
-// 📁 GERENCIADOR DE ARQUIVOS ESTILO GOOGLE DRIVE
-async function loadFiles(path = '/app') {
-  try {
-    const res = await fetch(`/api/files?path=${encodeURIComponent(path)}`);
-    const data = await res.json();
-    if (!res.ok) return;
-
-    currentDrivePath = data.currentPath;
-    parentDrivePath = data.parentPath;
-    currentFolderDisplay.textContent = currentDrivePath;
-
-    if (data.files.length === 0) {
-      filesListEl.innerHTML = `<tr><td colspan="4" class="empty-row">Diretório vazio.</td></tr>`;
-      return;
-    }
-
-    filesListEl.innerHTML = data.files.map(f => `
-      <tr>
-        <td>
-          <span style="display: flex; align-items: center; gap: 0.4rem;" class="${f.isDirectory ? 'icon-accent-amber' : 'icon-accent-blue'}">
-            ${f.isDirectory 
-              ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Pasta`
-              : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg> Arquivo`
-            }
-          </span>
-        </td>
-        <td>
-          ${f.isDirectory 
-            ? `<a href="#" onclick="loadFiles('${f.path.replace(/\\/g, '/')}'); return false;" class="cell-title" style="color: #60a5fa; text-decoration: underline;">${f.name}</a>`
-            : `<span class="cell-title">${f.name}</span>`
-          }
-        </td>
-        <td><span class="cell-code">${f.path}</span></td>
-        <td>
-          <div class="actions-row">
-            ${!f.isDirectory ? `
-              <button class="btn btn-logs" onclick="openFileEditor('${f.path.replace(/\\/g, '/')}')">Editar</button>
-              <a href="/api/files/download?path=${encodeURIComponent(f.path)}" class="btn btn-primary" download>Baixar</a>
-            ` : `<button class="btn btn-start" onclick="loadFiles('${f.path.replace(/\\/g, '/')}')">Abrir</button>`}
-          </div>
-        </td>
-      </tr>
-    `).join('');
-  } catch (err) {
-    console.error('Erro ao carregar arquivos:', err);
-  }
-}
-
-function navigateDriveUp() {
-  if (currentDrivePath !== '/') {
-    loadFiles(parentDrivePath);
-  }
-}
-
-// Abrir e Salvar Arquivos no Editor
-async function openFileEditor(filePath) {
-  editingFilePath = filePath;
-  editorFileTitle.textContent = `Editar: ${filePath}`;
-  fileEditorContent.value = 'Carregando conteúdo...';
-  fileEditorModal.classList.add('active');
-
-  try {
-    const res = await fetch(`/api/files/read?path=${encodeURIComponent(filePath)}`);
-    const data = await res.json();
-    fileEditorContent.value = data.content || '';
-  } catch (err) {
-    fileEditorContent.value = `Erro ao carregar arquivo: ${err.message}`;
-  }
-}
-
-function closeEditorModal() {
-  fileEditorModal.classList.remove('active');
-}
-
-async function saveFileContent() {
-  try {
-    const res = await fetch('/api/files/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: editingFilePath, content: fileEditorContent.value })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert(`✅ ${data.message}`);
-      closeEditorModal();
-    } else alert(`Erro ao salvar: ${data.error}`);
-  } catch (err) {
-    alert(`Erro ao salvar arquivo: ${err.message}`);
-  }
-}
-
-// Domínios & SSL
-async function addDomain(e) {
-  e.preventDefault();
-  const domain = document.getElementById('domain-input').value;
-  const containerPort = document.getElementById('port-input').value;
-
-  try {
-    const res = await fetch('/api/domains', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ domain, containerPort })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert(`${data.message}`);
-      loadDomains();
-    } else alert(`Erro: ${data.error}`);
-  } catch (err) {
-    alert(`Erro ao apontar domínio: ${err.message}`);
-  }
-}
-
-async function loadDomains() {
-  try {
-    const res = await fetch('/api/domains');
-    const domains = await res.json();
-
-    if (domains.length === 0) {
-      domainsListEl.innerHTML = `<tr><td colspan="4" class="empty-row">Nenhum domínio configurado ainda.</td></tr>`;
-      return;
-    }
-
-    domainsListEl.innerHTML = domains.map(d => `
-      <tr>
-        <td><span class="cell-title">${d.domain}</span></td>
-        <td><span class="cell-code">Porta ${d.containerPort}</span></td>
-        <td><span class="status-badge status-online"><span class="dot-status"></span> ${d.sslStatus}</span></td>
-        <td><span class="cell-code">${new Date(d.createdAt).toLocaleDateString()}</span></td>
-      </tr>
-    `).join('');
-  } catch (err) {
-    console.error('Erro ao carregar domínios:', err);
-  }
-}
-
-function renderContainers(containers) {
-  containerCountEl.textContent = `${containers.length} Ativo${containers.length !== 1 ? 's' : ''}`;
-
-  if (containers.length === 0) {
-    containersListEl.innerHTML = `<tr><td colspan="5" class="empty-row">Nenhum container Docker ativo no momento.</td></tr>`;
+  if (!containers || containers.length === 0) {
+    containerListEl.innerHTML = `<div class="empty-state">Nenhum container Docker rodando na VPS.</div>`;
     return;
   }
 
-  containersListEl.innerHTML = containers.map(c => {
+  containerListEl.innerHTML = containers.map(c => {
     const isRunning = c.state === 'running';
-    const statusClass = isRunning ? 'status-online' : 'status-offline';
-    const statusText = isRunning ? 'Rodando' : 'Parado';
+    const statusBadge = isRunning 
+      ? `<span class="status-badge status-online"><span class="dot-status"></span> Rodando</span>`
+      : `<span class="status-badge status-offline"><span class="dot-status"></span> Parado</span>`;
+
+    const portsText = c.ports.length > 0 ? c.ports.join(', ') : 'Interna';
 
     return `
-      <tr>
-        <td>
-          <span class="status-badge ${statusClass}">
-            <span class="dot-status"></span> ${statusText}
-          </span>
-        </td>
-        <td><span class="cell-title">${c.name}</span></td>
-        <td><span class="cell-code">${c.image}</span></td>
-        <td><span class="cell-code">${c.ports.join(', ') || 'Nenhuma'}</span></td>
-        <td>
-          <div class="actions-row">
-            ${isRunning 
-              ? `<button class="btn btn-stop" onclick="controlContainer('${c.id}', 'stop')">Parar</button>`
-              : `<button class="btn btn-start" onclick="controlContainer('${c.id}', 'start')">Iniciar</button>`
-            }
-            <button class="btn btn-start" onclick="controlContainer('${c.id}', 'restart')">Reiniciar</button>
-            <button class="btn btn-logs" onclick="viewLogs('${c.id}', '${c.name}')">Logs</button>
-            <button class="btn btn-delete" onclick="controlContainer('${c.id}', 'remove')">Excluir</button>
+      <div class="easypanel-card">
+        <div class="easypanel-card-header">
+          <div>
+            <div class="easypanel-card-title">${c.name}</div>
+            <span class="cell-code" style="font-size:0.75rem;">${c.image}</span>
           </div>
-        </td>
-      </tr>
+          ${statusBadge}
+        </div>
+
+        <div class="easypanel-stats-bar">
+          <div class="easypanel-stat-item">
+            <span class="stat-label">CPU</span>
+            <span class="stat-val">${c.cpuPercent || '0.0'}%</span>
+          </div>
+          <div class="easypanel-stat-item">
+            <span class="stat-label">RAM MB</span>
+            <span class="stat-val">${c.memUsageMB || '0.0'} MB</span>
+          </div>
+          <div class="easypanel-stat-item">
+            <span class="stat-label">Portas Expostas</span>
+            <span class="stat-val" style="color:var(--brand-blue);">${portsText}</span>
+          </div>
+        </div>
+
+        <div class="actions-row" style="margin-top:auto;">
+          <button class="btn btn-logs" onclick="openContainerLogs('${c.id}', '${c.name}')">📄 Logs</button>
+          <button class="btn" onclick="openRebindPortModal('${c.id}', '${c.ports[0] ? c.ports[0].split(':')[0] : ''}')">🔌 Mudar Porta</button>
+          ${isRunning 
+            ? `<button class="btn btn-stop" onclick="controlContainer('${c.id}', 'stop')">⏹️ Parar</button>`
+            : `<button class="btn btn-start" onclick="controlContainer('${c.id}', 'start')">▶️ Iniciar</button>`
+          }
+          <button class="btn btn-delete" onclick="controlContainer('${c.id}', 'remove')">🗑️</button>
+        </div>
+      </div>
     `;
   }).join('');
 }
 
+// Controlar Container (Start, Stop, Restart, Remove)
 async function controlContainer(id, action) {
-  if (action === 'remove' && !confirm('Tem certeza que deseja remover este container?')) return;
+  if (action === 'remove' && !confirm('Tem certeza que deseja apagar este container?')) return;
+  
   try {
     const res = await fetch(`/api/containers/${id}/${action}`, { method: 'POST' });
     const data = await res.json();
-    if (!res.ok) alert(`Erro: ${data.error}`);
-  } catch (err) {
-    alert(`Erro ao executar ação: ${err.message}`);
+    if (data.error) alert(`Erro: ${data.error}`);
+  } catch (e) {
+    alert(`Erro na requisição: ${e.message}`);
   }
 }
 
-async function viewLogs(id, name) {
-  modalTitle.textContent = `Logs: ${name}`;
-  logsContent.textContent = 'Buscando histórico de saída...';
-  logsModal.classList.add('active');
+// ----------------------------------------------------
+// LOGS MODAL & REBIND PORT MODAL
+// ----------------------------------------------------
+async function openContainerLogs(id, name) {
+  const modal = document.getElementById('logs-modal');
+  const title = document.getElementById('modal-title');
+  const content = document.getElementById('logs-content');
+
+  title.innerText = `Logs de Execução: ${name}`;
+  content.innerText = 'Buscando histórico de logs...';
+  modal.classList.add('active');
 
   try {
     const res = await fetch(`/api/containers/${id}/logs`);
-    const text = await res.text();
-    logsContent.textContent = text || 'Nenhum log gerado recentemente.';
-  } catch (err) {
-    logsContent.textContent = `Erro ao carregar logs: ${err.message}`;
+    const logs = await res.text();
+    content.innerText = logs || 'Nenhum log retornado pelo container.';
+  } catch (e) {
+    content.innerText = `Erro ao buscar logs: ${e.message}`;
   }
 }
 
-btnCloseModal.addEventListener('click', () => logsModal.classList.remove('active'));
-logsModal.addEventListener('click', (e) => { if (e.target === logsModal) logsModal.classList.remove('active'); });
+document.getElementById('btn-close-modal').addEventListener('click', () => {
+  document.getElementById('logs-modal').classList.remove('active');
+});
 
-// Inicialização
-loadFiles();
-loadDomains();
+function openRebindPortModal(id, currentPort) {
+  document.getElementById('rebind-container-id').value = id;
+  document.getElementById('rebind-new-port').value = currentPort || '8080';
+  document.getElementById('rebind-port-modal').classList.add('active');
+}
+
+function closeRebindPortModal() {
+  document.getElementById('rebind-port-modal').classList.remove('active');
+}
+
+async function submitRebindPort() {
+  const id = document.getElementById('rebind-container-id').value;
+  const newHostPort = document.getElementById('rebind-new-port').value;
+
+  try {
+    const res = await fetch(`/api/containers/${id}/rebind-port`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newHostPort })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(data.message);
+      closeRebindPortModal();
+    } else {
+      alert(`Erro: ${data.error}`);
+    }
+  } catch (e) {
+    alert(`Erro: ${e.message}`);
+  }
+}
+
+// ----------------------------------------------------
+// CHAT AGÊNTICO DA IA (HERMES / JACARÉ AGENT)
+// ----------------------------------------------------
+const chatHistory = [];
+
+async function handleSendAgentMessage(event) {
+  event.preventDefault();
+  const input = document.getElementById('chat-input');
+  const messagesContainer = document.getElementById('chat-messages');
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  // Renderizar mensagem do usuário
+  messagesContainer.innerHTML += `
+    <div class="chat-msg user">
+      <strong>Você:</strong> ${escapeHtml(text)}
+    </div>
+  `;
+  input.value = '';
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  // Placeholder do agente pensando
+  const thinkingId = `thinking-${Date.now()}`;
+  messagesContainer.innerHTML += `
+    <div class="chat-msg agent" id="${thinkingId}">
+      <strong>🐊 Jacaré Agent:</strong> <em>Pensando e executando ferramentas... ⚙️</em>
+    </div>
+  `;
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  try {
+    const res = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, history: chatHistory })
+    });
+
+    const data = await res.json();
+    const thinkingEl = document.getElementById(thinkingId);
+
+    if (data.error) {
+      thinkingEl.innerHTML = `<strong>🐊 Jacaré Agent:</strong> ⚠️ ${data.error}`;
+      return;
+    }
+
+    // Salvar histórico de conversa
+    chatHistory.push({ role: 'user', content: text });
+    chatHistory.push({ role: 'assistant', content: data.reply });
+
+    thinkingEl.innerHTML = `<strong>🐊 Jacaré Agent:</strong><br>${formatMarkdown(data.reply)}`;
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    if (data.config) {
+      document.getElementById('ai-provider-badge').innerText = `Provedor: ${data.config.provider} (${data.config.model})`;
+    }
+  } catch (e) {
+    const thinkingEl = document.getElementById(thinkingId);
+    if (thinkingEl) thinkingEl.innerHTML = `<strong>🐊 Jacaré Agent:</strong> ⚠️ Erro de conexão: ${e.message}`;
+  }
+}
+
+// ----------------------------------------------------
+// MODAIS DE IA E DEPLOY
+// ----------------------------------------------------
+function openAiConfigModal() {
+  fetch('/api/ai/config')
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('ai-provider-select').value = data.provider || 'groq';
+      document.getElementById('ai-model-name').value = data.model || 'llama-3.3-70b-versatile';
+      document.getElementById('ai-config-modal').classList.add('active');
+    });
+}
+
+function closeAiConfigModal() {
+  document.getElementById('ai-config-modal').classList.remove('active');
+}
+
+async function handleSaveAiConfig(event) {
+  event.preventDefault();
+  const provider = document.getElementById('ai-provider-select').value;
+  const apiKey = document.getElementById('ai-api-key').value;
+  const model = document.getElementById('ai-model-name').value;
+
+  try {
+    const res = await fetch('/api/ai/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider, apiKey, model })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('Configuração de IA atualizada com sucesso!');
+      closeAiConfigModal();
+      document.getElementById('ai-provider-badge').innerText = `Provedor: ${data.config.provider} (${data.config.model})`;
+    }
+  } catch (e) {
+    alert(`Erro: ${e.message}`);
+  }
+}
+
+function openDeployModal() {
+  document.getElementById('deploy-modal').classList.add('active');
+}
+
+function closeDeployModal() {
+  document.getElementById('deploy-modal').classList.remove('active');
+}
+
+function onDeployPresetChange() {
+  const val = document.getElementById('deploy-preset-select').value;
+  const customGrp = document.getElementById('custom-image-group');
+  customGrp.style.display = val === 'custom' ? 'block' : 'none';
+}
+
+async function handleCustomDeploySubmit(event) {
+  event.preventDefault();
+  const type = document.getElementById('deploy-preset-select').value;
+  const customImage = document.getElementById('deploy-custom-image').value;
+  const name = document.getElementById('deploy-container-name').value;
+  const portHost = document.getElementById('deploy-port-host').value;
+  const portContainer = document.getElementById('deploy-port-container').value;
+
+  try {
+    const res = await fetch('/api/deploy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, customImage, name, portHost, portContainer })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(data.message);
+      closeDeployModal();
+    } else {
+      alert(`Erro: ${data.error}`);
+    }
+  } catch (e) {
+    alert(`Erro: ${e.message}`);
+  }
+}
+
+// Terminal SSH Exec Handler
+function handleTerminalCommand(event) {
+  if (event.key === 'Enter') {
+    const input = document.getElementById('terminal-input');
+    const output = document.getElementById('terminal-output');
+    const cmd = input.value.trim();
+    if (!cmd) return;
+
+    output.innerHTML += `<div><span class="prompt-symbol">ubuntu@ec2:~$</span> ${escapeHtml(cmd)}</div>`;
+    input.value = '';
+
+    fetch('/api/terminal/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: cmd })
+    })
+    .then(r => r.json())
+    .then(data => {
+      output.innerHTML += `<div style="color:var(--text-secondary); margin-bottom:0.5rem;">${escapeHtml(data.output)}</div>`;
+      output.scrollTop = output.scrollHeight;
+    });
+  }
+}
+
+// Utilities
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function formatMarkdown(str) {
+  return escapeHtml(str)
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`(.*?)`/g, '<code class="cell-code">$1</code>')
+    .replace(/\n/g, '<br>');
+}

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            primary: 'var(--primary-color)',
+                            secondary: 'var(--secondary-color)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --primary-color: {{ brand.primary_color|default('#1e3a8a') }}; /* Azul corporativo default */
+            --secondary-color: {{ brand.secondary_color|default('#0f172a') }}; /* Slate escuro */
+        }
+        
+        body { 
+            background-color: #f8fafc; 
+            color: #334155; 
+            margin: 0;
+            padding: 0;
+            background-image: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+        }
+        
+        @page {
+            size: 1920px 1080px;
+            margin: 0;
+        }
+
+        .slide {
+            width: 1920px;
+            height: 1080px;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .elegant-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+        }
+
+        .accent-bar {
+            width: 120px;
+            height: 8px;
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CAPA -->
+    <section class="slide p-24 flex items-center justify-between">
+        
+        <div class="w-1/2 pr-16 z-10 flex flex-col justify-center h-full">
+            <div class="accent-bar mb-10"></div>
+            
+            <p class="text-2xl font-bold tracking-[0.2em] text-brand-secondary uppercase mb-6">
+                Proposta Executiva
+            </p>
+
+            <h1 class="font-serif text-[7rem] font-bold leading-[1.1] text-brand-secondary mb-12">
+                {{ title }}
+            </h1>
+
+            <p class="text-3xl text-gray-500 font-light leading-relaxed max-w-2xl">
+                Uma visão estratégica e dados orientados a resultados para o próximo ciclo operacional.
+            </p>
+        </div>
+
+        <div class="w-1/2 h-full relative z-0 pl-10 py-10">
+            <div class="absolute inset-0 bg-brand-primary opacity-5 rounded-[3rem] transform translate-x-8 translate-y-8"></div>
+            <div class="w-full h-full rounded-[3rem] overflow-hidden elegant-shadow bg-white p-4">
+                <div class="w-full h-full bg-gray-100 rounded-[2.5rem] overflow-hidden relative">
+                    <!-- Imagem placeholder padrão de corporativo, se a capa não tiver -->
+                    <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1920" class="w-full h-full object-cover opacity-80" alt="Corporate" />
+                    <div class="absolute inset-0 bg-brand-secondary opacity-10 mix-blend-multiply"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDES DINÂMICOS -->
+    {% for slide in slides %}
+    <section class="slide p-24 flex flex-col">
+        
+        <!-- Header do Slide -->
+        <header class="flex justify-between items-end mb-16 pb-8 border-b-2 border-gray-200">
+            <div>
+                <span class="text-xl font-bold text-brand-primary tracking-widest uppercase mb-4 block">Seção {{ loop.index }}</span>
+                <h2 class="font-serif text-6xl font-bold text-brand-secondary">
+                    {{ slide.headline }}
+                </h2>
+            </div>
+            <div class="w-16 h-16 rounded-full bg-brand-primary flex items-center justify-center opacity-10">
+                <i data-lucide="bar-chart" class="w-8 h-8 text-brand-primary"></i>
+            </div>
+        </header>
+
+        <div class="flex-1 flex gap-20">
+            <div class="flex-1 flex flex-col justify-center">
+                <p class="text-4xl text-gray-700 leading-[1.6] font-light">
+                    {{ slide.body_text }}
+                </p>
+
+                <!-- Box de Destaque -->
+                <div class="mt-16 bg-white p-10 rounded-2xl elegant-shadow border-l-8" style="border-color: var(--primary-color);">
+                    <div class="flex items-center gap-6">
+                        <div class="p-4 bg-brand-primary/10 rounded-full">
+                            <i data-lucide="target" class="w-10 h-10 text-brand-primary"></i>
+                        </div>
+                        <p class="text-2xl text-brand-secondary font-medium">Foco absoluto em performance corporativa e previsibilidade.</p>
+                    </div>
+                </div>
+            </div>
+
+            {% if slide.image_prompt %}
+            <div class="flex-1">
+                <div class="w-full h-[600px] rounded-3xl overflow-hidden elegant-shadow bg-white p-3 mt-10">
+                    <img src="{{ slide.image_prompt }}" class="w-full h-full object-cover rounded-2xl" alt="Visão Executiva" />
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mt-auto pt-8 flex justify-between items-center text-gray-400 font-sans text-xl">
+            <span>{{ title }}</span>
+            <span class="font-medium text-brand-secondary">{{ loop.index + 1 }}</span>
+        </div>
+    </section>
+    {% endfor %}
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

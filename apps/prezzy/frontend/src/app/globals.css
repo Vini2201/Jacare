@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  /* LIGHT THEME (White) */
+  --ink: #0d0d0d;
+  --ink-muted: #555555;
+  --surface: #fdfdfd;
+  --panel: #ffffff;
+  --panel-2: #f3f3f3;
+  --rule: #e5e5e5;
+  --primary: #ff6a00;
+  --primary-bg: rgba(255,106,0,0.10);
+  --primary-glow: rgba(255,106,0,0.25);
+  --accent: #e55e00;
+  
+  --background: var(--surface);
+  --foreground: var(--ink);
+}
+
+:root.dark {
+  /* DARK THEME (Black - from prezzy_prd.html) */
+  --ink: #f0ece4;
+  --ink-muted: #a89f92;
+  --surface: #0d0d0d;
+  --panel: #161616;
+  --panel-2: #1e1e1e;
+  --rule: #2a2a2a;
+  --primary: #ff6a00;
+  --primary-bg: rgba(255,106,0,0.10);
+  --primary-glow: rgba(255,106,0,0.25);
+  --accent: #ff9a3c;
+  
+  --background: var(--surface);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-rule: var(--rule);
+  --font-sans: 'Space Grotesk', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}

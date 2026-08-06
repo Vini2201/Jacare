@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ScaleGrid VPS Engine | Enterprise Cloud Control</title>
+  <title>Jacaré Engine & Hermes Agent | VPS Control</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -12,7 +12,7 @@
 </head>
 <body>
   <div class="app-layout">
-    <!-- Header (Sempre Visível) -->
+    <!-- Header -->
     <header class="top-header">
       <div class="brand-group">
         <div class="brand-logo">
@@ -21,8 +21,8 @@
           </svg>
         </div>
         <div>
-          <h1 class="brand-title">ScaleGrid <span class="brand-badge">Engine v1.0</span></h1>
-          <span class="sub-text" id="os-info">Carregando telemetria do sistema...</span>
+          <h1 class="brand-title">Jacaré <span class="brand-badge">Engine + Hermes Agent</span></h1>
+          <span class="sub-text" id="os-info">Carregando telemetria...</span>
         </div>
       </div>
       
@@ -42,25 +42,21 @@
 
     <!-- Navegação por Abas -->
     <nav class="tabs-nav">
-      <button class="tab-btn active" data-tab="tab-overview">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        <span>Visão Geral</span>
+      <button class="tab-btn active" data-tab="tab-agent">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Jacaré AI Agent</span>
       </button>
       <button class="tab-btn" data-tab="tab-containers">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-        <span>Containers & Deploy</span>
+        <span>Serviços & Containers</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-overview">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Telemetria VPS</span>
       </button>
       <button class="tab-btn" data-tab="tab-telegram">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        <span>Telegram Automação</span>
-      </button>
-      <button class="tab-btn" data-tab="tab-domains">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        <span>Domínios & SSL</span>
-      </button>
-      <button class="tab-btn" data-tab="tab-files">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        <span>Arquivos (Drive)</span>
+        <span>Telegram MTProto</span>
       </button>
       <button class="tab-btn" data-tab="tab-terminal">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
@@ -71,8 +67,55 @@
     <!-- Conteúdo das Abas -->
     <main class="tab-content-container">
       
-      <!-- ABA 1: VISÃO GERAL -->
-      <div class="tab-pane active" id="tab-overview">
+      <!-- ABA 0: JACARÉ AI AGENT (HERMES STYLE) -->
+      <div class="tab-pane active" id="tab-agent">
+        <section class="section-block">
+          <div class="section-title-bar">
+            <h2>Jacaré Agent (Assistente Agêntico Autônomo)</h2>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <span class="status-badge status-online" id="ai-provider-badge">Provedor: Groq (Llama 3.3 70B)</span>
+              <button class="btn btn-primary btn-sm" onclick="openAiConfigModal()">⚙️ Configurar IA</button>
+            </div>
+          </div>
+
+          <div class="card form-card agent-chat-card">
+            <div class="agent-chat-messages" id="chat-messages">
+              <div class="chat-msg system">
+                <strong>🐊 Jacaré Agent:</strong> Olá! Eu sou seu assistente agêntico Hermes-style rodando nesta VPS. Posso criar containers, alterar portas, checar logs, rodar comandos e otimizar seu sistema em linguagem natural. Como posso ajudar?
+              </div>
+            </div>
+
+            <form id="chat-form" class="chat-input-form" onsubmit="handleSendAgentMessage(event)">
+              <input type="text" id="chat-input" class="form-input" placeholder="Ex: 'Sobe um banco PostgreSQL na porta 5433' ou 'Altere o modelo para llama-3.3-70b'..." required>
+              <button type="submit" class="btn btn-primary" id="btn-send-agent">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Enviar
+              </button>
+            </form>
+          </div>
+        </section>
+      </div>
+
+      <!-- ABA 1: SERVIÇOS & CONTAINERS (EASYPANEL STYLE) -->
+      <div class="tab-pane" id="tab-containers">
+        <section class="section-block">
+          <div class="section-title-bar">
+            <h2>Serviços Docker em Execução</h2>
+            <div style="display:flex; gap:0.5rem;">
+              <span class="count-badge" id="container-count">0 Ativos</span>
+              <button class="btn btn-primary btn-sm" onclick="openDeployModal()">+ Novo Serviço</button>
+            </div>
+          </div>
+
+          <!-- Easypanel Grid de Containers -->
+          <div class="easypanel-grid" id="easypanel-containers-list">
+            <div class="empty-state">Carregando serviços e estatísticas de CPU/RAM...</div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ABA 2: TELEMETRIA DA VPS -->
+      <div class="tab-pane" id="tab-overview">
         <div class="metrics-grid">
           <!-- CPU Card -->
           <div class="card metric-card">
@@ -104,22 +147,7 @@
             </div>
           </div>
 
-          <!-- SWAP Card -->
-          <div class="card metric-card">
-            <div class="card-header">
-              <span class="card-title">SWAP (Virtual RAM)</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-purple"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            </div>
-            <div class="metric-value-container">
-              <span class="metric-big" id="swap-usage">0 GB</span>
-              <span class="metric-sub" id="swap-total">de 0 GB</span>
-            </div>
-            <div class="progress-bar-bg">
-              <div class="progress-bar-fill fill-purple" id="swap-bar" style="width: 0%"></div>
-            </div>
-          </div>
-
-          <!-- Disco Card -->
+          <!-- Armazenamento Card -->
           <div class="card metric-card">
             <div class="card-header">
               <span class="card-title">Armazenamento</span>
@@ -136,257 +164,44 @@
         </div>
       </div>
 
-      <!-- ABA 2: CONTAINERS & DEPLOY -->
-      <div class="tab-pane" id="tab-containers">
-        <section class="section-block">
-          <div class="section-title-bar">
-            <h2>Puxar Imagem Customizada (Docker Hub)</h2>
-            <span class="section-tag">Easypanel Image Pull</span>
-          </div>
-          <div class="card form-card">
-            <form id="custom-pull-form" class="inline-form" onsubmit="deployCustomImage(event)">
-              <div class="form-group">
-                <label>Nome da Imagem Docker Hub (Ex: ubuntu:latest, python:3.11-slim)</label>
-                <input type="text" id="custom-image-input" placeholder="ex: python:3.11-slim" required class="form-input">
-              </div>
-              <button type="submit" class="btn btn-primary" style="height: 42px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Puxar & Iniciar Imagem
-              </button>
-            </form>
-          </div>
-        </section>
-
-        <section class="section-block">
-          <div class="section-title-bar">
-            <h2>Deploy em 1 Clique (Imagens Oficiais)</h2>
-            <span class="section-tag">Marketplace</span>
-          </div>
-
-          <div class="deploy-cards-grid">
-            <!-- Telegram MTProto -->
-            <div class="deploy-card">
-              <div class="deploy-card-head">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-blue"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                <h3>Telegram MTProto</h3>
-              </div>
-              <p>Microserviço GramJS/Node.js na porta 4000 (Pull node:20-alpine).</p>
-              <button class="btn btn-primary btn-block" onclick="deployService('telegram')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                + Criar
-              </button>
-            </div>
-
-            <!-- Nginx -->
-            <div class="deploy-card">
-              <div class="deploy-card-head">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-green"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                <h3>Nginx Proxy</h3>
-              </div>
-              <p>Proxy Reverso na porta 8080 (Pull nginx:alpine).</p>
-              <button class="btn btn-primary btn-block" onclick="deployService('nginx')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                + Criar
-              </button>
-            </div>
-
-            <!-- PostgreSQL -->
-            <div class="deploy-card">
-              <div class="deploy-card-head">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-blue"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-                <h3>PostgreSQL 16</h3>
-              </div>
-              <p>Banco de Dados na porta 5432 (Pull postgres:16-alpine).</p>
-              <button class="btn btn-primary btn-block" onclick="deployService('postgres')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                + Criar
-              </button>
-            </div>
-
-            <!-- MySQL -->
-            <div class="deploy-card">
-              <div class="deploy-card-head">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-amber"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-                <h3>MySQL 8.0</h3>
-              </div>
-              <p>Banco de Dados na porta 3306 (Pull mysql:8.0).</p>
-              <button class="btn btn-primary btn-block" onclick="deployService('mysql')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                + Criar
-              </button>
-            </div>
-
-            <!-- Redis -->
-            <div class="deploy-card">
-              <div class="deploy-card-head">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-accent-red"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                <h3>Redis Cache</h3>
-              </div>
-              <p>Banco em memória na porta 6379 (Pull redis:alpine).</p>
-              <button class="btn btn-primary btn-block" onclick="deployService('redis')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                + Criar
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <!-- Containers Rodando com Botão de Reiniciar -->
-        <section class="section-block">
-          <div class="section-title-bar">
-            <h2>Containers Rodando</h2>
-            <span class="count-badge" id="container-count">0 Ativos</span>
-          </div>
-
-          <div class="data-card-container">
-            <table class="custom-table">
-              <thead>
-                <tr>
-                  <th>Status</th>
-                  <th>Nome do Container</th>
-                  <th>Imagem</th>
-                  <th>Mapeamento de Portas</th>
-                  <th style="text-align: right;">Ações de Controle</th>
-                </tr>
-              </thead>
-              <tbody id="containers-list">
-                <tr>
-                  <td colspan="5" class="empty-row">Coletando estado dos containers...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-
-      <!-- ABA TELEGRAM AUTOMATION -->
+      <!-- ABA 3: TELEGRAM AUTOMATION -->
       <div class="tab-pane" id="tab-telegram">
         <section class="section-block">
           <div class="section-title-bar">
-            <h2>Painel de Controle: Telegram MTProto Service</h2>
-            <span class="status-badge status-online"><span class="dot-status"></span> Porta 4000 Ativa</span>
+            <h2>Painel Telegram MTProto Service</h2>
           </div>
-
           <div class="card form-card">
-            <p style="color: var(--text-secondary); margin-bottom: 1.25rem; font-size: 0.9rem;">
-              Envie mensagens e comandos diretamente para grupos ou usuários do Telegram através do microserviço em execução.
-            </p>
-            <form id="telegram-form" class="inline-form" onsubmit="sendTelegramMessage(event)">
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">Envie mensagens via microserviço GramJS/TelegramClient.</p>
+            <form class="inline-form" onsubmit="sendTelegramMessage(event)">
               <div class="form-group">
-                <label>ID do Chat / Username / Canal</label>
-                <input type="text" id="telegram-chat-id" placeholder="ex: @canal_promos ou 123456789" required class="form-input">
+                <label>ID / Username / Canal</label>
+                <input type="text" id="telegram-chat-id" placeholder="@canal_promos" required class="form-input">
               </div>
-
-              <div class="form-group" style="flex-grow: 2;">
-                <label>Mensagem a ser enviada</label>
-                <input type="text" id="telegram-message-input" placeholder="Digite a mensagem de teste ou promoção..." required class="form-input">
+              <div class="form-group" style="flex-grow:2;">
+                <label>Mensagem</label>
+                <input type="text" id="telegram-message-input" placeholder="Mensagem..." required class="form-input">
               </div>
-
-              <button type="submit" class="btn btn-primary" style="height: 42px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                Enviar Mensagem
-              </button>
+              <button type="submit" class="btn btn-primary" style="height:42px;">Enviar</button>
             </form>
           </div>
         </section>
       </div>
 
-      <!-- ABA 3: DOMÍNIOS & SSL -->
-      <div class="tab-pane" id="tab-domains">
-        <section class="section-block">
-          <div class="section-title-bar">
-            <h2>Apontamento de Domínios & SSL Automatizado</h2>
-          </div>
-
-          <div class="card form-card">
-            <form id="domain-form" class="inline-form" onsubmit="addDomain(event)">
-              <div class="form-group">
-                <label>Endereço de Domínio / Subdomínio</label>
-                <input type="text" id="domain-input" placeholder="ex: api.meusite.com" required class="form-input">
-              </div>
-
-              <div class="form-group" style="max-width: 200px;">
-                <label>Porta do Container</label>
-                <input type="number" id="port-input" placeholder="ex: 4000" required class="form-input">
-              </div>
-
-              <button type="submit" class="btn btn-primary" style="align-self: flex-end; height: 42px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                Apontar & Gerar SSL
-              </button>
-            </form>
-
-            <table class="custom-table" style="margin-top: 1.5rem;">
-              <thead>
-                <tr>
-                  <th>Domínio Registrado</th>
-                  <th>Porta Alvo</th>
-                  <th>Certificado Let's Encrypt</th>
-                  <th>Data de Emissão</th>
-                </tr>
-              </thead>
-              <tbody id="domains-list">
-                <tr>
-                  <td colspan="4" class="empty-row">Nenhum domínio associado.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-
-      <!-- ABA 4: ARQUIVOS ESTILO GOOGLE DRIVE -->
-      <div class="tab-pane" id="tab-files">
-        <section class="section-block">
-          <div class="section-title-bar">
-            <h2>Explorador de Arquivos da VPS (Estilo Drive)</h2>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
-              <button class="btn btn-primary" onclick="navigateDriveUp()" id="btn-drive-up">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-                Voltar Pasta
-              </button>
-              <span class="path-badge" id="current-folder-display">/app</span>
-            </div>
-          </div>
-
-          <div class="data-card-container">
-            <table class="custom-table">
-              <thead>
-                <tr>
-                  <th>Tipo</th>
-                  <th>Nome do Arquivo / Pasta</th>
-                  <th>Caminho Absoluto</th>
-                  <th style="text-align: right;">Ações de Arquivo</th>
-                </tr>
-              </thead>
-              <tbody id="files-list">
-                <tr>
-                  <td colspan="4" class="empty-row">Escaneando sistema de arquivos...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-
-      <!-- ABA 5: TERMINAL WEB SSH -->
+      <!-- ABA 4: TERMINAL SSH -->
       <div class="tab-pane" id="tab-terminal">
         <section class="section-block">
           <div class="section-title-bar">
-            <h2>Terminal Linux no Navegador (Web SSH Console)</h2>
-            <span class="path-badge">bash - ubuntu@ec2</span>
+            <h2>Terminal Console Linux</h2>
           </div>
-
           <div class="card form-card">
             <div class="terminal-console-window">
               <div id="terminal-output" class="terminal-output-body">
-                <div>ScaleGrid Web SSH Terminal v1.0</div>
-                <div>Digite os comandos bash diretamente na EC2 abaixo:</div>
+                <div>ScaleGrid/Jacaré Web SSH Terminal</div>
                 <br>
               </div>
               <div class="terminal-input-line">
                 <span class="prompt-symbol">ubuntu@ec2:~$</span>
-                <input type="text" id="terminal-input" class="terminal-cmd-input" placeholder="ex: docker ps, ls -la, htop..." onkeydown="handleTerminalCommand(event)">
+                <input type="text" id="terminal-input" class="terminal-cmd-input" placeholder="ex: docker ps, ls -la..." onkeydown="handleTerminalCommand(event)">
               </div>
             </div>
           </div>
@@ -396,38 +211,105 @@
     </main>
   </div>
 
-  <!-- Modal de Editor de Código de Arquivo -->
-  <div class="modal-backdrop" id="file-editor-modal">
-    <div class="modal-dialog" style="max-width: 900px;">
+  <!-- Modal de Deploy de Serviço -->
+  <div class="modal-backdrop" id="deploy-modal">
+    <div class="modal-dialog">
       <div class="modal-header">
-        <div class="modal-title-group">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          <h3 id="editor-file-title">Editar Arquivo</h3>
-        </div>
-        <button class="modal-close-btn" onclick="closeEditorModal()">&times;</button>
+        <h3>Criar Novo Serviço (Easypanel Deploy)</h3>
+        <button class="modal-close-btn" onclick="closeDeployModal()">&times;</button>
       </div>
       <div class="modal-body">
-        <textarea id="file-editor-content" class="code-editor-textarea" rows="18"></textarea>
-        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
-          <button class="btn" onclick="closeEditorModal()">Cancelar</button>
-          <button class="btn btn-primary" onclick="saveFileContent()">Salvar Alterações</button>
-        </div>
+        <form onsubmit="handleCustomDeploySubmit(event)">
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label>Tipo de Serviço / Imagem</label>
+            <select id="deploy-preset-select" class="form-input" onchange="onDeployPresetChange()">
+              <option value="postgres">PostgreSQL 16 (postgres:16-alpine)</option>
+              <option value="redis">Redis Cache (redis:alpine)</option>
+              <option value="nginx">Nginx Proxy (nginx:alpine)</option>
+              <option value="mysql">MySQL 8.0 (mysql:8.0)</option>
+              <option value="prezzy">Prezzy SaaS Suite (FastAPI + Next.js)</option>
+              <option value="custom">Imagem Docker Hub Customizada</option>
+            </select>
+          </div>
+          <div class="form-group" id="custom-image-group" style="display:none; margin-bottom:1rem;">
+            <label>Nome da Imagem Docker Hub</label>
+            <input type="text" id="deploy-custom-image" placeholder="ex: python:3.11-slim" class="form-input">
+          </div>
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label>Nome do Container</label>
+            <input type="text" id="deploy-container-name" placeholder="ex: meu-banco-prod" class="form-input">
+          </div>
+          <div style="display:flex; gap:1rem; margin-bottom:1rem;">
+            <div class="form-group" style="flex:1;">
+              <label>Porta Exposta (VPS Host)</label>
+              <input type="number" id="deploy-port-host" placeholder="ex: 5433" class="form-input">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label>Porta Interna Container</label>
+              <input type="number" id="deploy-port-container" placeholder="ex: 5432" class="form-input">
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+            <button type="button" class="btn" onclick="closeDeployModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Puxar & Iniciar Serviço</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 
-  <!-- Modal de Logs -->
-  <div class="modal-backdrop" id="logs-modal">
+  <!-- Modal Configuração da IA (Groq / OpenAI) -->
+  <div class="modal-backdrop" id="ai-config-modal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <div class="modal-title-group">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-          <h3 id="modal-title">Logs de Execução</h3>
-        </div>
-        <button class="modal-close-btn" id="btn-close-modal">&times;</button>
+        <h3>Configuração do Agente de IA</h3>
+        <button class="modal-close-btn" onclick="closeAiConfigModal()">&times;</button>
       </div>
       <div class="modal-body">
-        <pre class="terminal-log-output" id="logs-content">Buscando histórico de saída...</pre>
+        <form onsubmit="handleSaveAiConfig(event)">
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label>Provedor de IA</label>
+            <select id="ai-provider-select" class="form-input">
+              <option value="groq">Groq (Gratuito e Ultra-rápido)</option>
+              <option value="openai">OpenAI (GPT-4o / GPT-4o-mini)</option>
+              <option value="openrouter">OpenRouter (Claude / Gemini / etc)</option>
+              <option value="ollama">Ollama (Rodando Localmente)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label>API Key</label>
+            <input type="password" id="ai-api-key" placeholder="gsk_... ou sk-..." class="form-input">
+          </div>
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label>Modelo LLM</label>
+            <input type="text" id="ai-model-name" placeholder="llama-3.3-70b-versatile" class="form-input">
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+            <button type="button" class="btn" onclick="closeAiConfigModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar Configuração</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Alterar Porta -->
+  <div class="modal-backdrop" id="rebind-port-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Alterar Mapeamento de Porta do Serviço</h3>
+        <button class="modal-close-btn" onclick="closeRebindPortModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="rebind-container-id">
+        <div class="form-group" style="margin-bottom:1rem;">
+          <label>Nova Porta Exposta na VPS Host</label>
+          <input type="number" id="rebind-new-port" class="form-input" placeholder="ex: 5433" required>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+          <button type="button" class="btn" onclick="closeRebindPortModal()">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="submitRebindPort()">Salvar & Recriar Container</button>
+        </div>
       </div>
     </div>
   </div>

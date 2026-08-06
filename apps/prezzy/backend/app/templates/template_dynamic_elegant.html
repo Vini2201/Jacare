@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'sans-serif'],
+                        serif: ['Lora', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            primary: 'var(--primary-color)',
+                            secondary: 'var(--secondary-color)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --primary-color: {{ brand.primary_color|default('#d4af37') }}; /* Gold */
+            --secondary-color: {{ brand.secondary_color|default('#1a202c') }}; /* Dark Slate */
+        }
+        
+        body { 
+            background-color: var(--secondary-color); 
+            color: #f7fafc; 
+            margin: 0;
+            padding: 0;
+        }
+        
+        @page {
+            size: 1920px 1080px;
+            margin: 0;
+        }
+
+        .slide {
+            width: 1920px;
+            height: 1080px;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editorial-line {
+            width: 1px;
+            height: 100px;
+            background-color: var(--primary-color);
+            margin: 0 auto;
+        }
+
+        .elegant-border {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CAPA -->
+    <section class="slide p-20 flex flex-col justify-center items-center text-center">
+        
+        <!-- Frame decorativo -->
+        <div class="absolute inset-10 elegant-border rounded-xl pointer-events-none"></div>
+        <div class="absolute inset-14 elegant-border rounded-xl pointer-events-none opacity-50"></div>
+
+        <div class="z-10 flex flex-col items-center">
+            <span class="font-sans text-brand-primary tracking-[0.5em] uppercase text-2xl mb-12 block">
+                Edição Exclusiva
+            </span>
+            
+            <div class="editorial-line mb-12"></div>
+
+            <h1 class="font-sans text-[7.5rem] font-light leading-tight mb-16 max-w-6xl mx-auto">
+                {{ title }}
+            </h1>
+
+            <p class="font-serif italic text-3xl text-gray-400 max-w-3xl leading-relaxed">
+                "Uma abordagem refinada, onde o design encontra o propósito estratégico."
+            </p>
+        </div>
+    </section>
+
+    <!-- SLIDES DINÂMICOS -->
+    {% for slide in slides %}
+    <section class="slide p-24">
+        
+        <!-- Frame -->
+        <div class="absolute inset-0 m-12 elegant-border pointer-events-none z-0"></div>
+
+        <div class="relative z-10 w-full h-full flex flex-col">
+            <header class="flex justify-between items-start mb-20">
+                <div class="w-16 h-[2px] bg-brand-primary mt-6"></div>
+                <div class="font-sans text-brand-primary tracking-widest uppercase text-xl">
+                    Capítulo {{ loop.index }}
+                </div>
+            </header>
+
+            <div class="flex-1 flex gap-24 items-center">
+                {% if slide.image_prompt and loop.index is divisibleby 2 %}
+                <div class="flex-1 h-[700px] relative">
+                    <!-- Imagem alinhada de forma assimétrica -->
+                    <div class="absolute inset-0 bg-brand-primary transform -translate-x-6 translate-y-6 opacity-20"></div>
+                    <img src="{{ slide.image_prompt }}" class="relative w-full h-full object-cover filter grayscale" alt="Editorial" />
+                </div>
+                {% endif %}
+
+                <div class="flex-[1.2] flex flex-col justify-center">
+                    <h2 class="font-sans text-6xl font-light leading-[1.2] mb-12 text-white">
+                        {{ slide.headline }}
+                    </h2>
+                    
+                    <div class="pl-8 border-l border-brand-primary">
+                        <p class="font-serif text-3xl text-gray-300 leading-[1.8] font-light italic">
+                            {{ slide.body_text }}
+                        </p>
+                    </div>
+                </div>
+
+                {% if slide.image_prompt and not loop.index is divisibleby 2 %}
+                <div class="flex-1 h-[700px] relative">
+                    <!-- Imagem alinhada de forma assimétrica -->
+                    <div class="absolute inset-0 bg-brand-primary transform translate-x-6 -translate-y-6 opacity-20"></div>
+                    <img src="{{ slide.image_prompt }}" class="relative w-full h-full object-cover filter grayscale" alt="Editorial" />
+                </div>
+                {% endif %}
+            </div>
+
+            <footer class="mt-auto flex justify-between font-sans text-gray-500 text-sm tracking-widest uppercase">
+                <span>{{ title }}</span>
+                <span>Página {{ loop.index }}</span>
+            </footer>
+        </div>
+    </section>
+    {% endfor %}
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <style>
+                
+        :root {
+            --primary-color: #000000;
+            --secondary-color: #ffffff;
+            --font-family: 'Inter', sans-serif;
+        }
+        
+                body { 
+                    margin: 0; 
+                    padding: 0;
+                    font-family: var(--font-family); 
+                    background-color: var(--secondary-color); 
+                    color: var(--primary-color); 
+                }
+                .slide { 
+                    width: 1920px; 
+                    height: 1080px; 
+                    padding: 100px; 
+                    box-sizing: border-box; 
+                    page-break-after: always; 
+                    display: flex; 
+                    flex-direction: row; 
+                    align-items: center;
+                    justify-content: space-between; 
+                }
+                .slide-content {
+                    flex: 1;
+                    padding-right: 40px;
+                }
+                h1 { font-size: 80px; margin-bottom: 40px; line-height: 1.2; font-weight: 800; }
+                p { font-size: 40px; line-height: 1.5; font-weight: 400; }
+                .slide-image {
+                    flex: 1;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+                @page { size: 1920px 1080px; margin: 0; }
+            </style>
+        </head>
+        <body>
+            
+            <div class="slide" id="slide-0">
+                <div class="slide-content">
+                    <h1>Introdução</h1>
+                    <p>Bem-vindos à apresentação da nossa nova plataforma de vendas, projetada para revolucionar a forma como você faz negócios.</p>
+                </div>
+                <div class="slide-image"><img src="https://picsum.photos/seed/7799/1920/1080" style="max-width: 800px; max-height: 500px; border-radius: 20px; object-fit: cover;" /></div>
+            </div>
+            
+            <div class="slide" id="slide-1">
+                <div class="slide-content">
+                    <h1>O que é a Nova Plataforma?</h1>
+                    <p>Nossa plataforma é uma solução inovadora e integrada que combina inteligência artificial, machine learning e analytics para ajudar as empresas a aumentar as vendas e melhorar a eficiência.</p>
+                </div>
+                <div class="slide-image"><img src="https://picsum.photos/seed/6643/1920/1080" style="max-width: 800px; max-height: 500px; border-radius: 20px; object-fit: cover;" /></div>
+            </div>
+            
+            <div class="slide" id="slide-2">
+                <div class="slide-content">
+                    <h1>Benefícios da Nova Plataforma</h1>
+                    <p>Com a nossa plataforma, você pode esperar aumentos significativos nas vendas, redução dos custos operacionais e melhoria da experiência do cliente.</p>
+                </div>
+                <div class="slide-image"><img src="https://picsum.photos/seed/9973/1920/1080" style="max-width: 800px; max-height: 500px; border-radius: 20px; object-fit: cover;" /></div>
+            </div>
+            
+            <div class="slide" id="slide-3">
+                <div class="slide-content">
+                    <h1>Call to Action</h1>
+                    <p>Estamos ansiosos para discutir como a nossa plataforma pode ajudar o seu negócio a crescer. Agende uma reunião conosco hoje mesmo!</p>
+                </div>
+                <div class="slide-image"><img src="https://picsum.photos/seed/5770/1920/1080" style="max-width: 800px; max-height: 500px; border-radius: 20px; object-fit: cover;" /></div>
+            </div>
+            
+        </body>
+        </html>
+        

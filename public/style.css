@@ -627,3 +627,127 @@ body {
   padding: 2rem !important;
   font-size: 0.85rem;
 }
+
+/* 🎨 EASYPANEL GRID & CARDS */
+.easypanel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+
+.easypanel-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: all 0.2s ease;
+}
+
+.easypanel-card:hover {
+  border-color: var(--border-focus);
+}
+
+.easypanel-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.easypanel-card-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.easypanel-stats-bar {
+  display: flex;
+  gap: 1rem;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.6rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+}
+
+.easypanel-stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.stat-val {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.easypanel-logs-preview {
+  background: #040d21;
+  border-radius: 8px;
+  padding: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #388bfd;
+  max-height: 100px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 🤖 JACARÉ AGENT CHAT CARD */
+.agent-chat-card {
+  display: flex;
+  flex-direction: column;
+  height: 520px;
+  padding: 1.25rem;
+}
+
+.agent-chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-right: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.chat-msg {
+  padding: 0.85rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  max-width: 85%;
+  word-break: break-word;
+}
+
+.chat-msg.system {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  color: var(--text-primary);
+  align-self: flex-start;
+}
+
+.chat-msg.user {
+  background: var(--brand-blue);
+  color: white;
+  align-self: flex-end;
+}
+
+.chat-msg.agent {
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border-dim);
+  color: var(--text-primary);
+  align-self: flex-start;
+}
+
+.chat-input-form {
+  display: flex;
+  gap: 0.75rem;
+}
+

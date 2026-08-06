@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root {
+  --ink: #f0ece4;
+  --ink-muted: #a89f92;
+  --surface: #0d0d0d;
+  --panel: #161616;
+  --panel-2: #1e1e1e;
+  --rule: #2a2a2a;
+  --primary: #ff6a00;
+  --primary-bg: rgba(255,106,0,0.10);
+  --primary-glow: rgba(255,106,0,0.25);
+  --accent: #ff9a3c;
+  --sans: 'Space Grotesk', sans-serif;
+  --mono: 'Space Mono', monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: var(--sans);
+  background: #070707;
+  color: var(--ink);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+/* ── PAGE SHELL ─────────────────────────────────── */
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  background: var(--surface);
+  margin: 0 auto 10mm;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.page-header {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5mm 15mm 4mm;
+  border-bottom: 0.3mm solid var(--rule);
+}
+
+.page-header .logo-mark {
+  font-family: var(--mono);
+  font-size: 8pt;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.page-header .page-label {
+  font-family: var(--mono);
+  font-size: 7pt;
+  color: var(--ink-muted);
+  letter-spacing: 0.1em;
+}
+
+.page-body {
+  flex: 1;
+  padding: 10mm 15mm;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-footer {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4mm 15mm;
+  border-top: 0.3mm solid var(--rule);
+}
+
+.page-footer span {
+  font-family: var(--mono);
+  font-size: 7pt;
+  color: var(--ink-muted);
+  letter-spacing: 0.08em;
+}
+
+/* ── TYPOGRAPHY ─────────────────────────────────── */
+.mega-title {
+  font-size: 44pt;
+  font-weight: 700;
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.mega-title span {
+  color: var(--primary);
+}
+
+.mega-sub {
+  font-size: 11pt;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  margin-top: 4mm;
+}
+
+h2 {
+  font-size: 16pt;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ink);
+  margin-bottom: 4mm;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+h2 i { color: var(--primary); width: 20px; height: 20px; }
+
+h3 {
+  font-size: 11pt;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 2mm;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+p {
+  font-size: 9.5pt;
+  line-height: 1.65;
+  color: var(--ink-muted);
+  margin-bottom: 3mm;
+}
+
+p strong { color: var(--ink); font-weight: 600; }
+
+/* ── COMPONENTS ─────────────────────────────────── */
+.section-label {
+  font-family: var(--mono);
+  font-size: 7.5pt;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 3mm;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.section-label::after {
+  content: '';
+  display: block;
+  flex: 1;
+  height: 0.3mm;
+  background: var(--primary);
+  opacity: 0.3;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5mm;
+  margin-bottom: 5mm;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4mm;
+  margin-bottom: 5mm;
+}
+
+.card {
+  background: var(--panel);
+  border: 0.3mm solid var(--rule);
+  border-radius: 2mm;
+  padding: 5mm;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.card-accent {
+  border-left: 0.8mm solid var(--primary);
+}
+
+.card .card-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--primary);
+  margin-bottom: 3mm;
+}
+
+.card h3 { margin-bottom: 1.5mm; font-size: 9.5pt; }
+.card p { font-size: 8.5pt; margin-bottom: 0; line-height: 1.55; }
+
+.callout {
+  background: var(--primary-bg);
+  border: 0.4mm solid var(--primary);
+  border-radius: 2mm;
+  padding: 5mm 6mm;
+  margin-bottom: 5mm;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.callout p { color: var(--ink); margin-bottom: 0; font-size: 9.5pt; }
+.callout strong { color: var(--primary); }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--panel-2);
+  border: 0.3mm solid var(--rule);
+  border-radius: 50mm;
+  padding: 1.5mm 3.5mm;
+  font-family: var(--mono);
+  font-size: 7pt;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.tag.orange {
+  background: var(--primary-bg);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2mm;
+  margin-bottom: 5mm;
+}
+
+.tech-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 5mm;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.tech-table th {
+  font-family: var(--mono);
+  font-size: 7.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  padding: 3mm 4mm;
+  border-bottom: 0.4mm solid var(--primary);
+  text-align: left;
+}
+
+.tech-table td {
+  font-size: 8.5pt;
+  color: var(--ink-muted);
+  padding: 2.5mm 4mm;
+  border-bottom: 0.3mm solid var(--rule);
+  line-height: 1.4;
+}
+
+.tech-table td strong { color: var(--ink); }
+.tech-table tr:last-child td { border-bottom: none; }
+.tech-table td.pill {
+  font-family: var(--mono);
+  font-size: 7pt;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.divider {
+  border: none;
+  border-top: 0.3mm solid var(--rule);
+  margin: 5mm 0;
+}
+
+/* Cover specific */
+.cover-glow {
+  position: absolute;
+  top: -30mm;
+  right: -20mm;
+  width: 120mm;
+  height: 120mm;
+  background: radial-gradient(circle, rgba(255,106,0,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.cover-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--primary-bg);
+  border: 0.4mm solid var(--primary);
+  border-radius: 50mm;
+  padding: 2mm 5mm;
+  font-family: var(--mono);
+  font-size: 8pt;
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8mm;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4mm;
+  margin: 6mm 0;
+}
+
+.stat-box {
+  background: var(--panel);
+  border: 0.3mm solid var(--rule);
+  border-radius: 2mm;
+  padding: 4mm;
+  text-align: center;
+}
+
+.stat-box .stat-num {
+  font-size: 22pt;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.0;
+  display: block;
+  margin-bottom: 1.5mm;
+}
+
+.stat-box .stat-label {
+  font-family: var(--mono);
+  font-size: 7pt;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.pill-status {
+  display: inline-block;
+  padding: 0.8mm 2.5mm;
+  border-radius: 50mm;
+  font-family: var(--mono);
+  font-size: 7pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pill-free { background: rgba(16,185,129,0.15); color: #10b981; }
+.pill-pro  { background: var(--primary-bg); color: var(--primary); }
+.pill-god  { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+
+.flow-row {
+  display: flex;
+  align-items: center;
+  gap: 2mm;
+  flex-wrap: wrap;
+  margin-bottom: 4mm;
+}
+
+.flow-step {
+  background: var(--panel);
+  border: 0.3mm solid var(--rule);
+  border-radius: 1.5mm;
+  padding: 2mm 4mm;
+  font-size: 8.5pt;
+  color: var(--ink);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.flow-arrow {
+  color: var(--primary);
+  font-family: var(--mono);
+  font-size: 10pt;
+}
+
+.list-check {
+  list-style: none;
+  margin-bottom: 4mm;
+}
+
+.list-check li {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 9pt;
+  color: var(--ink-muted);
+  line-height: 1.55;
+  margin-bottom: 2mm;
+}
+
+.list-check li i {
+  color: var(--primary);
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── PRINT ──────────────────────────────────────── */
+@media print {
+  body { background: white; }
+  .page {
+    margin: 0;
+    width: 100%;
+    min-height: 100vh;
+    page-break-after: always;
+    box-shadow: none;
+    border: none;
+  }
+  @page { size: A4 portrait; margin: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PAGE 01 · CAPA                                 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="cover-glow"></div>
+  <div class="page-header">
+    <span class="logo-mark">PREZZY</span>
+    <span class="page-label">PRD · v1.0 · CONFIDENCIAL</span>
+  </div>
+  <div class="page-body" style="justify-content: space-between; padding-top: 18mm;">
+
+    <div>
+      <div class="cover-badge">
+        <i data-lucide="zap" style="width:12px;height:12px;"></i>
+        Product Requirements Document
+      </div>
+
+      <div class="mega-title">
+        PREZZY<span>.</span>
+      </div>
+      <p style="font-family: var(--mono); font-size: 10pt; color: var(--primary); margin-top: 2mm; letter-spacing: 0.05em;">
+        Apresentações &amp; eBooks com IA Multi-Agente
+      </p>
+
+      <p class="mega-sub" style="max-width: 150mm; margin-top: 6mm;">
+        Uma plataforma SaaS freemium que transforma um briefing em uma apresentação
+        ou eBook profissional em menos de 90 segundos — via pipeline multi-agente
+        com Groq, Gemini, GPT e OpenRouter, exportando HTML, PDF e formatos
+        de tela customizados.
+      </p>
+
+      <div class="stat-row" style="margin-top: 10mm;">
+        <div class="stat-box">
+          <span class="stat-num">&lt; 90s</span>
+          <span class="stat-label">Geração Completa</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num">5+</span>
+          <span class="stat-label">Provedores de IA</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num">∞</span>
+          <span class="stat-label">Resoluções de Tela</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <hr class="divider">
+      <div class="grid-2">
+        <div>
+          <p style="font-size: 8pt; margin-bottom: 1mm;"><strong>Modelo de Negócio</strong></p>
+          <p style="font-size: 8.5pt;">Freemium · Assinatura Pro · Créditos Avulsos</p>
+        </div>
+        <div>
+          <p style="font-size: 8pt; margin-bottom: 1mm;"><strong>Stack Principal</strong></p>
+          <p style="font-size: 8.5pt;">Next.js · FastAPI · Supabase · Render · Playwright</p>
+        </div>
+      </div>
+      <div class="tags-row">
+        <span class="tag orange"><i data-lucide="layers" style="width:9px;height:9px;"></i> Multi-Agente</span>
+        <span class="tag orange"><i data-lucide="monitor" style="width:9px;height:9px;"></i> Custom Resolution</span>
+        <span class="tag orange"><i data-lucide="key" style="width:9px;height:9px;"></i> Multi-API-Key</span>
+        <span class="tag"><i data-lucide="file-text" style="width:9px;height:9px;"></i> PDF Export</span>
+        <span class="tag"><i data-lucide="users" style="width:9px;height:9px;"></i> Superuser Panel</span>
+        <span class="tag"><i data-lucide="palette" style="width:9px;height:9px;"></i> 5+ Templates</span>
+      </div>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <span>PREZZY · Product Requirements Document</span>
+    <span>01 / 08</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PAGE 02 · VISÃO DO PRODUTO & PROBLEMA          -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="logo-mark">PREZZY</span>
+    <span class="page-label">VISÃO · PROBLEMA · OPORTUNIDADE</span>
+  </div>
+  <div class="page-body">
+
+    <div class="section-label"><i data-lucide="target" style="width:11px;height:11px;"></i> Visão do Produto</div>
+
+    <div class="callout" style="margin-bottom: 6mm;">
+      <p><strong>Prezzy é o único gerador de apresentações e eBooks que usa um pipeline de IA multi-agente para pesquisar, estruturar, escrever e renderizar documentos profissionais — exportáveis em qualquer resolução de tela, de A4 a painéis de LED.</strong></p>
+    </div>
+
+    <div class="section-label"><i data-lucide="alert-triangle" style="width:11px;height:11px;"></i> O Problema</div>
+
+    <div class="grid-2" style="margin-bottom: 5mm;">
+      <div class="card card-accent">
+        <i data-lucide="clock" class="card-icon"></i>
+        <h3>Tempo Desperdiçado</h3>
+        <p>Profissionais gastam 4–8 horas montando apresentações que poderiam ser geradas em 90 segundos. O Canva faz o design mas não gera o conteúdo.</p>
+      </div>
+      <div class="card card-accent">
+        <i data-lucide="puzzle" class="card-icon"></i>
+        <h3>Ferramentas Fragmentadas</h3>
+        <p>ChatGPT escreve, Canva diagramou, Gamma tenta os dois — mas nenhum exporta PDF de qualidade editorial, muito menos em resolução customizada.</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <i data-lucide="monitor-x" class="card-icon"></i>
+        <h3>Resolução Padrão Única</h3>
+        <p>Todas as ferramentas assumem 16:9. Igrejas, feiras, painéis de LED, totens — ninguém serve essas resoluções exóticas como 1536×512.</p>
+      </div>
+      <div class="card">
+        <i data-lucide="lock" class="card-icon"></i>
+        <h3>Vendor Lock-in de IA</h3>
+        <p>Ferramentas travam você num único modelo. Quando a API cai ou o preço sobe, você fica refém. Multi-provider é sobrevivência.</p>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="section-label"><i data-lucide="trending-up" style="width:11px;height:11px;"></i> Oportunidade</div>
+
+    <div class="grid-3">
+      <div class="stat-box">
+        <span class="stat-num">12M+</span>
+        <span class="stat-label">Criadores BR</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num">R$97</span>
+        <span class="stat-label">Ticket Médio Pro</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num">R$50k</span>
+        <span class="stat-label">MRR Potencial (500 usuários)</span>
+      </div>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <span>PREZZY · Product Requirements Document</span>
+    <span>02 / 08</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PAGE 03 · PLANOS & MODELO DE NEGÓCIO           -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="logo-mark">PREZZY</span>
+    <span class="page-label">PLANOS · FREEMIUM · SUPERUSER</span>
+  </div>
+  <div class="page-body">
+
+    <div class="section-label"><i data-lucide="layers" style="width:11px;height:11px;"></i> Modelo de Acesso</div>
+
+    <table class="tech-table">
+      <thead>
+        <tr>
+          <th>Recurso</th>
+          <th><span class="pill-status pill-free">Free</span></th>
+          <th><span class="pill-status pill-pro">Pro · R$97/mês</span></th>
+          <th><span class="pill-status pill-god">God · Superuser</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Gerações / mês</strong></td><td>3</td><td>Ilimitado</td><td>Ilimitado</td></tr>
+        <tr><td><strong>Tipos de saída</strong></td><td>Apresentação</td><td>Apresent. + eBook + Whitepaper</td><td>Todos</td></tr>
+        <tr><td><strong>Templates</strong></td><td>1 (Light)</td><td>Todos os 5+</td><td>Todos + exclusivos</td></tr>
+        <tr><td><strong>Resoluções custom</strong></td><td>Não</td><td>Sim (qualquer WxH)</td><td>Sim</td></tr>
+        <tr><td><strong>Marca d'água</strong></td><td>Sim</td><td>Não</td><td>Não</td></tr>
+        <tr><td><strong>Exportação PDF</strong></td><td>Não</td><td>Sim</td><td>Sim</td></tr>
+        <tr><td><strong>Upload de conteúdo próprio</strong></td><td>Não</td><td>Sim</td><td>Sim</td></tr>
+        <tr><td><strong>Provedor de IA</strong></td><td>Groq (fixo)</td><td>Escolha livre</td><td>Own API Keys</td></tr>
+        <tr><td><strong>Criar contas Free</strong></td><td>Não</td><td>Não</td><td><strong>Sim (painel admin)</strong></td></tr>
+        <tr><td><strong>Suporte</strong></td><td>Comunidade</td><td>Email</td><td>Direto</td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-label" style="margin-top: 2mm;"><i data-lucide="shield" style="width:11px;height:11px;"></i> Superuser — Painel Admin</div>
+
+    <div class="callout">
+      <p>O <strong>Superuser</strong> é você — o operador da plataforma. Ele acessa um painel especial onde pode criar, suspender e editar contas Free para distribuir como cortesia, para sua igreja, comunidade ou clientes. Sem custo de geração, usando o pool de API keys cadastradas pelo admin.</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <i data-lucide="user-plus" class="card-icon"></i>
+        <h3>Criar Conta Free</h3>
+        <p>Insere email, define limite de gerações e prazo de expiração. O convite é enviado automaticamente via Supabase Auth.</p>
+      </div>
+      <div class="card">
+        <i data-lucide="bar-chart-2" class="card-icon"></i>
+        <h3>Dashboard de Uso</h3>
+        <p>Vê quantas gerações cada conta consumiu, quais templates foram usados e qual provedor de IA foi acionado.</p>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top: 2mm;"><i data-lucide="credit-card" style="width:11px;height:11px;"></i> Alternativa de Monetização</div>
+
+    <div class="grid-2">
+      <div class="card card-accent">
+        <h3>Assinatura Mensal</h3>
+        <p><strong style="color: var(--primary); font-size: 12pt;">R$ 97/mês</strong> — Pro ilimitado. Pago via Mercado Pago.</p>
+      </div>
+      <div class="card">
+        <h3>Créditos Avulsos</h3>
+        <p><strong>R$ 9</strong> por geração avulsa · <strong>R$ 39</strong> pack com 5 · <strong>R$ 69</strong> pack com 12</p>
+      </div>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <span>PREZZY · Product Requirements Document</span>
+    <span>03 / 08</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PAGE 04 · WIZARD & PIPELINE MULTI-AGENTE       -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="logo-mark">PREZZY</span>
+    <span class="page-label">WIZARD · PIPELINE · AGENTES</span>
+  </div>
+  <div class="page-body">
+
+    <div class="section-label"><i data-lucide="list-checks" style="width:11px;height:11px;"></i> Wizard de Entrada (7 Etapas)</div>
+
+    <table class="tech-table">
+      <thead>
+        <tr><th>#</th><th>Pergunta</th><th>Opções</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="pill">01</td><td><strong>Tipo de saída</strong></td><td>Apresentação · eBook · Whitepaper · Slide Custom</td></tr>
+        <tr><td class="pill">02</td><td><strong>Tema / Assunto</strong></td><td>Input livre (ou upload de texto/PDF)</td></tr>
+        <tr><td class="pill">03</td><td><strong>Público-alvo</strong></td><td>Executivos · Técnico · Estudantes · Congregação · Geral</td></tr>
+        <tr><td class="pill">04</td><td><strong>Tom</strong></td><td>Corporativo · Educativo · Criativo · Jornalístico · Devocional</td></tr>
+        <tr><td class="pill">05</td><td><strong>Estilo visual</strong></td><td>Cards visuais com preview de template</td></tr>
+        <tr><td class="pill">06</td><td><strong>Tamanho / Resolução</strong></td><td>A4 · 16:9 · 9:16 · Custom WxH (ex: 1536×512)</td></tr>
+        <tr><td class="pill">07</td><td><strong>Provedor de IA</strong></td><td>Groq · Gemini · GPT-4o · OpenRouter · Auto</td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-label"><i data-lucide="cpu" style="width:11px;height:11px;"></i> Pipeline Multi-Agente</div>
+
+    <div class="flow-row">
+      <div class="flow-step"><i data-lucide="user" style="width:11px;height:11px;display:inline;"></i> Wizard Input</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Agente 1: Pesquisador</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Agente 2: Arquiteto</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Agente 3: Copywriter</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Agente 4: Designer</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Playwright → PDF</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">Supabase Storage</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card card-accent">
+        <i data-lucide="search" class="card-icon"></i>
+        <h3>Agente 1 · Pesquisador</h3>
+        <p>Busca fontes, dados e contexto via web search ou RAG. Usa Groq/Gemini para sumarização. Retorna JSON estruturado com fatos verificados.</p>
+      </div>
+      <div class="card card-accent">
+        <i data-lucide="git-branch" class="card-icon"></i>
+        <h3>Agente 2 · Arquiteto</h3>
+        <p>Define a estrutura do documento: títulos, seções, número de slides/páginas e arco narrativo. Responde JSON com schema fixo.</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <i data-lucide="pen-tool" class="card-icon"></i>
+        <h3>Agente 3 · Copywriter</h3>
+        <p>Escreve o conteúdo slide a slide / página a página seguindo o arco definido, respeitando tom e público selecionados no wizard.</p>
+      </div>
+      <div class="card">
+        <i data-lucide="layout" class="card-icon"></i>
+        <h3>Agente 4 · Designer</h3>
+        <p>Escolhe template, paleta e tipografia. Injeta conteúdo no HTML do Gabarito V4. Aplica resolução custom via CSS. Gera arquivo final.</p>
+      </div>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <span>PREZZY · Product Requirements Document</span>
+    <span>04 / 08</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PAGE 05 · PROVEDORES DE IA & MULTI-KEY         -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="logo-mark">PREZZY</span>
+    <span class="page-label">PROVEDORES DE IA · MULTI-KEY · FALLBACK</span>
+  </div>
+  <div class="page-body">
+
+    <div class="section-label"><i data-lucide="key" style="width:11px;height:11px;"></i> Provedores Suportados</div>
+
+    <table class="tech-table">
+      <thead>
+        <tr><th>Provedor</th><th>Modelos</th><th>Uso Recomendado</th><th>Free Tier</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Groq</strong></td><td>llama-3.3-70b · mixtral-8x7b</td><td>Pesquisa + Copy (velocidade)</td><td class="pill">Sim</td></tr>
+        <tr><td><strong>Google Gemini</strong></td><td>gemini-2.0-flash · gemini-pro</td><td>Pesquisa web nativa + RAG</td><td class="pill">Sim</td></tr>
+        <tr><td><strong>OpenAI GPT</strong></td><td>gpt-4o · gpt-4o-mini</td><td>Design + Copy premium</td><td class="pill">Não</td></tr>
+        <tr><td><strong>OpenRouter</strong></td><td>claude-3.5 · mistral · cohere</td><td>Fallback e modelos alternativos</td><td class="pill">Parcial</td></tr>
+        <tr><td><strong>Anthropic</strong></td><td>claude-sonnet · claude-haiku</td><td>Estrutura editorial complexa</td><td class="pill">Não</td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-label"><i data-lucide="repeat" style="width:11px;height:11px;"></i> Sistema Multi-Key com Rotation e Fallback</div>
+
+    <div class="callout">
+      <p>O Superuser cadastra <strong>múltiplas API Keys por provedor</strong> no painel admin. O sistema rotaciona entre elas automaticamente (round-robin) e detecta rate-limits ou erros 429 para pular para a próxima key sem interromper a geração do usuário.</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card card-accent">
+        <i data-lucide="rotate-cw" class="card-icon"></i>
+        <h3>Key Rotation</h3>
+        <p>Cadastra N keys por provedor. O sistema distribui as chamadas ciclicamente. Se uma key atinge limite, pula para a próxima automaticamente.</p>
+      </div>
+      <div class="card card-accent">
+        <i data-lucide="shield-check" class="card-icon"></i>
+        <h3>Provider Fallback</h3>
+        <p>Se o Groq cair, cai para Gemini. Se o Gemini estiver lento, tenta OpenRouter. Ordem de fallback configurável pelo admin no painel.</p>
+      </div>
+    </div>
+
+    <div class="section-label"><i data-lucide="sliders" style="width:11px;height:11px;"></i> Painel de API Keys (Admin)</div>
+
+    <ul class="list-check">
+      <li><i data-lucide="check-circle"></i> Adicionar / remover keys por provedor sem restart do servidor</li>
+      <li><i data-lucide="check-circle"></i> Ver status de cada key (ativa / rate-limited / inválida)</li>
+      <li><i data-lucide="check-circle"></i> Consumo estimado por key (tokens usados hoje)</li>
+      <li><i data-lucide="check-circle"></i> Definir provedor padrão por tipo de agente (ex: Groq para pesquisa, GPT para copy)</li>
+      <li><i data-lucide="check-circle"></i> Modo "gratuito total" — usa só as keys do admin para os usuários Free</li>
+    </ul>
+
+  </div>
+  <div class="page-footer">
+    <span>PREZZY · Product Requirements Document</span>
+    <span>05 / 08</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PAGE 06 · RESOLUÇÃO CUSTOM & TEMPLATES         -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="logo-mark">PREZZY</span>
+    <span class="page-label">RESOLUÇÃO CUSTOM · TEMPLATES · GABARITO V4</span>
+  </div>
+  <div class="page-body">
+
+    <div class="section-label"><i data-lucide="monitor" style="width:11px;height:11px;"></i> Modo Custom Resolution — Diferencial Único</div>
+
+    <div class="callout">
+      <p>O usuário informa <strong>largura × altura em pixels</strong>. O sistema gera o HTML com viewport exato, sem scroll, otimizado para projeção. Perfeito para <strong>painéis de LED, totens, telões de igrejas e feiras</strong>.</p>
+    </div>
+
+    <table class="tech-table">
+      <thead>
+        <tr><th>Preset</th><th>Resolução</th><th>Caso de Uso</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>A4 Portrait</strong></td><td>210mm × 297mm</td><td>eBook, Whitepaper, Relatório</td></tr>
+        <tr><td><strong>Widescreen 16:9</strong></td><td>1920 × 1080px</td><td>Apresentação padrão, YouTube</td></tr>
+        <tr><td><strong>Vertical 9:16</strong></td><td>1080 × 1920px</td><td>Stories, Reels, Totem</td></tr>
+        <tr><td><strong>Ultrawide Banner</strong></td><td>1536 × 512px</td><td>Painel LED de Igreja / Evento</td></tr>
+        <tr><td><strong>Square 1:1</strong></td><td>1080 × 1080px</td><td>Post Instagram / LinkedIn</td></tr>
+        <tr><td><strong>Custom</strong></td><td>W × H livres</td><td>Qualquer display específico</td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-label"><i data-lucide="palette" style="width:11px;height:11px;"></i> Catálogo de Templates (Gabarito V4)</div>
+
+    <div class="grid-2">
+      <div class="card card-accent">
+        <h3>Dark Minimal · Default</h3>
+        <p>Fundo preto, tipografia Space Grotesk, acento laranja neon. Identidade do Prezzy. Usado por padrão no Free.</p>
+      </div>
+      <div class="card">
+        <h3>Clean Corporate</h3>
+        <p>Branco, azul, sans-serif clean. Para relatórios executivos, propostas B2B e apresentações institucionais.</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Bold Geek / Tech</h3>
+        <p>Gradientes cyberpunk, glassmorphism, ícones tech. Para pitches de startups, produtos digitais e conteúdo geek.</p>
+      </div>
+      <div class="card">
+        <h3>Warm Editorial</h3>
+        <p>Bege, tipografia serif, estilo livro/magazine. Perfeito para eBooks, devocionais e conteúdo editorial.</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Church / Devocional</h3>
+        <p>Tom suave, fontes legíveis, cores pastéis ou escuras. Especialmente desenhado para slides de culto e estudos bíblicos.</p>
+      </div>
+      <div class="card card-accent">
+        <h3>+ Novos (Roadmap)</h3>
+        <p>Templates da comunidade: usuários Pro podem submeter templates. Os melhores entram no catálogo oficial.</p>
+      </div>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <span>PREZZY · Product Requirements Document</span>
+    <span>06 / 08</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PAGE 07 · STACK TÉCNICA & ARQUITETURA          -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="logo-mark">PREZZY</span>
+    <span class="page-label">ARQUITETURA · STACK · DEPLOY</span>
+  </div>
+  <div class="page-body">
+
+    <div class="section-label"><i data-lucide="layers" style="width:11px;height:11px;"></i> Stack Técnica</div>
+
+    <table class="tech-table">
+      <thead>
+        <tr><th>Camada</th><th>Tecnologia</th><th>Responsabilidade</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="pill">Frontend</td><td><strong>Next.js 15 + TailwindCSS</strong></td><td>Wizard, preview, dashboard, área do usuário</td></tr>
+        <tr><td class="pill">Backend</td><td><strong>FastAPI (Python)</strong></td><td>Orquestração de agentes, job queue, API REST</td></tr>
+        <tr><td class="pill">Agentes</td><td><strong>Groq / Gemini / GPT / OpenRouter</strong></td><td>Pesquisa, estrutura, copy, design</td></tr>
+        <tr><td class="pill">Render</td><td><strong>Playwright (Chromium)</strong></td><td>HTML → PDF / PNG em qualquer resolução</td></tr>
+        <tr><td class="pill">Banco</td><td><strong>Supabase (PostgreSQL)</strong></td><td>Usuários, gerações, API keys, templates</td></tr>
+        <tr><td class="pill">Storage</td><td><strong>Supabase Storage</strong></td><td>PDFs, HTMLs e PNGs gerados</td></tr>
+        <tr><td class="pill">Auth</td><td><strong>Supabase Auth</strong></td><td>Login, convites, roles (free/pro/god)</td></tr>
+        <tr><td class="pill">Pagamento</td><td><strong>Mercado Pago</strong></td><td>Assinatura Pro + créditos avulsos</td></tr>
+        <tr><td class="pill">Deploy</td><td><strong>Render</strong></td><td>Backend + Playwright containerizados</td></tr>
+        <tr><td class="pill">Queue</td><td><strong>n8n ou BullMQ</strong></td><td>Jobs assíncronos de geração (timeout 90s)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-label"><i data-lucide="database" style="width:11px;height:11px;"></i> Schema Principal (Supabase)</div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Tabela: users</h3>
+        <p>id · email · role (free/pro/god) · credits · created_by (superuser) · expires_at · provider_preference</p>
+      </div>
+      <div class="card">
+        <h3>Tabela: generations</h3>
+        <p>id · user_id · type · topic · template · resolution · status · output_url · provider_used · duration_ms</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card card-accent">
+        <h3>Tabela: api_keys</h3>
+        <p>id · provider · key_value (encrypted) · is_active · usage_today · rate_limited_until · created_by</p>
+      </div>
+      <div class="card">
+        <h3>Tabela: templates</h3>
+        <p>id · name · preview_url · html_skeleton · css_vars · resolution_support · is_public · created_by</p>
+      </div>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <span>PREZZY · Product Requirements Document</span>
+    <span>07 / 08</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PAGE 08 · ROADMAP 90 DIAS                      -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="logo-mark">PREZZY</span>
+    <span class="page-label">ROADMAP 90 DIAS · MVP → RECEITA</span>
+  </div>
+  <div class="page-body">
+
+    <div class="section-label"><i data-lucide="map" style="width:11px;height:11px;"></i> Roadmap de Execução</div>
+
+    <div class="card card-accent" style="margin-bottom: 4mm;">
+      <div style="display:flex; align-items:center; gap:6px; margin-bottom:3mm;">
+        <i data-lucide="calendar" style="width:16px;height:16px;color:var(--primary);"></i>
+        <h3 style="margin-bottom:0;">Sprint 1 · Semanas 1–2 · Core Pipeline</h3>
+      </div>
+      <ul class="list-check" style="margin-bottom:0;">
+        <li><i data-lucide="check-circle"></i> FastAPI com endpoint <code style="font-size:8pt; color:var(--accent);">/generate</code> recebendo JSON do wizard</li>
+        <li><i data-lucide="check-circle"></i> 4 agentes Groq encadeados (pesquisa → estrutura → copy → design)</li>
+        <li><i data-lucide="check-circle"></i> Gabarito V4 injetado como template base + Playwright → PDF</li>
+        <li><i data-lucide="check-circle"></i> Upload para Supabase Storage + retorno de URL</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-bottom: 4mm;">
+      <div style="display:flex; align-items:center; gap:6px; margin-bottom:3mm;">
+        <i data-lucide="calendar" style="width:16px;height:16px;color:var(--primary);"></i>
+        <h3 style="margin-bottom:0;">Sprint 2 · Semanas 3–4 · Frontend + Auth</h3>
+      </div>
+      <ul class="list-check" style="margin-bottom:0;">
+        <li><i data-lucide="check-circle"></i> Next.js wizard 7 etapas com preview do template selecionado</li>
+        <li><i data-lucide="check-circle"></i> Supabase Auth (login, convite por email, roles)</li>
+        <li><i data-lucide="check-circle"></i> Painel Superuser: criar contas Free, ver uso, gerenciar API keys</li>
+        <li><i data-lucide="check-circle"></i> Sistema de créditos + limite por role</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-bottom: 4mm;">
+      <div style="display:flex; align-items:center; gap:6px; margin-bottom:3mm;">
+        <i data-lucide="calendar" style="width:16px;height:16px;color:var(--primary);"></i>
+        <h3 style="margin-bottom:0;">Sprint 3 · Semanas 5–6 · Multi-Provider + Custom Resolution</h3>
+      </div>
+      <ul class="list-check" style="margin-bottom:0;">
+        <li><i data-lucide="check-circle"></i> Integração Gemini, GPT-4o, OpenRouter com fallback automático</li>
+        <li><i data-lucide="check-circle"></i> Multi-key rotation com painel de status das keys</li>
+        <li><i data-lucide="check-circle"></i> Custom resolution: Playwright renderiza em WxH arbitrário</li>
+        <li><i data-lucide="check-circle"></i> Preset de painéis (1536×512, 16:9, 9:16, A4)</li>
+      </ul>
+    </div>
+
+    <div class="card card-accent">
+      <div style="display:flex; align-items:center; gap:6px; margin-bottom:3mm;">
+        <i data-lucide="calendar" style="width:16px;height:16px;color:var(--primary);"></i>
+        <h3 style="margin-bottom:0;">Sprint 4 · Semanas 7–12 · Monetização + Templates + Growth</h3>
+      </div>
+      <ul class="list-check" style="margin-bottom:0;">
+        <li><i data-lucide="check-circle"></i> Mercado Pago: assinatura Pro R$97/mês + créditos avulsos</li>
+        <li><i data-lucide="check-circle"></i> 5 templates completos no catálogo (incluindo Church e Geek)</li>
+        <li><i data-lucide="check-circle"></i> Upload de conteúdo próprio (PDF/TXT → agente processa)</li>
+        <li><i data-lucide="check-circle"></i> Landing page + primeiros 50 usuários beta</li>
+      </ul>
+    </div>
+
+  </div>
+  <div class="page-footer">
+    <span>PREZZY · Product Requirements Document</span>
+    <span>08 / 08</span>
+  </div>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

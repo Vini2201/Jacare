@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            primary: 'var(--primary-color)',
+                            secondary: 'var(--secondary-color)',
+                            bg: '#050505',
+                            panel: '#121212',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --primary-color: {{ brand.primary_color|default('#ea1d2c') }};
+            --secondary-color: {{ brand.secondary_color|default('#000000') }};
+        }
+        
+        body { 
+            background-color: #050505; 
+            color: #f8fafc; 
+            margin: 0;
+            padding: 0;
+            /* Grid Técnico Background */
+            background-image: radial-gradient(color-mix(in srgb, var(--primary-color) 15%, transparent) 1px, transparent 1px); 
+            background-size: 30px 30px; 
+        }
+        
+        @page {
+            size: 1920px 1080px;
+            margin: 0;
+        }
+
+        .slide {
+            width: 1920px;
+            height: 1080px;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gradient-text { 
+            background: linear-gradient(to right, var(--primary-color), #ffffff); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+
+        /* Efeitos de Luz */
+        .ambient-light {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: var(--primary-color);
+            opacity: 0.15;
+            filter: blur(150px);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .content-layer {
+            z-index: 10;
+            position: relative;
+        }
+
+        .glow-box {
+            box-shadow: 0 0 40px color-mix(in srgb, var(--primary-color) 20%, transparent);
+            border: 1px solid color-mix(in srgb, var(--primary-color) 40%, transparent);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CAPA -->
+    <section class="slide flex items-center justify-center text-center px-20">
+        <div class="ambient-light top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+        
+        <div class="content-layer max-w-5xl">
+            <div class="inline-flex items-center gap-3 bg-brand-panel border border-brand-primary/30 px-6 py-3 rounded-full text-brand-primary text-xl font-bold tracking-widest uppercase mb-12">
+                <span class="relative flex h-4 w-4">
+                  <span class="absolute inline-flex h-full w-full rounded-full bg-brand-primary opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-4 w-4 bg-brand-primary"></span>
+                </span>
+                CONFIDENCIAL
+            </div>
+
+            <h1 class="font-display text-8xl font-black leading-tight mb-10">
+                <span class="gradient-text">{{ title }}</span>
+            </h1>
+
+            <div class="relative w-full mx-auto bg-brand-panel glow-box rounded-xl overflow-hidden mt-12 text-left p-8">
+                <div class="flex items-center gap-3 mb-6 border-b border-gray-800 pb-4">
+                    <div class="w-4 h-4 rounded-full bg-red-500"></div>
+                    <div class="w-4 h-4 rounded-full bg-yellow-500"></div>
+                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
+                    <span class="ml-4 font-mono text-xl text-gray-500">system_boot.exe</span>
+                </div>
+                <p class="font-mono text-2xl text-gray-300 leading-relaxed">
+                    <span class="text-brand-primary">> Inicializando protocolo de apresentação...</span><br><br>
+                    Status: <span class="text-green-500">Pronto para execução.</span>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDES DINÂMICOS -->
+    {% for slide in slides %}
+    <section class="slide p-20 flex flex-col justify-center">
+        <!-- Luz de fundo no canto -->
+        <div class="ambient-light -top-40 -right-40"></div>
+        <div class="ambient-light -bottom-40 -left-40 opacity-10"></div>
+
+        <div class="content-layer w-full h-full flex {% if loop.index is divisibleby 2 %}flex-row{% else %}flex-row-reverse{% endif %} items-center gap-20">
+            
+            <div class="flex-1 space-y-10">
+                <div class="inline-block bg-brand-panel border-l-4 border-brand-primary px-6 py-2">
+                    <span class="font-mono text-xl text-brand-primary uppercase tracking-widest">Módulo {{ loop.index }}</span>
+                </div>
+                
+                <h2 class="font-display text-7xl font-black leading-tight text-white">
+                    {{ slide.headline }}
+                </h2>
+                
+                <p class="text-3xl text-gray-300 leading-relaxed font-sans font-light">
+                    {{ slide.body_text }}
+                </p>
+
+                <ul class="space-y-6 mt-8">
+                    <li class="flex items-start gap-4 text-2xl text-gray-400 font-mono">
+                        <i data-lucide="check-square" class="w-8 h-8 text-brand-primary shrink-0 mt-1"></i>
+                        <span>Execução sistêmica otimizada.</span>
+                    </li>
+                    <li class="flex items-start gap-4 text-2xl text-gray-400 font-mono">
+                        <i data-lucide="zap" class="w-8 h-8 text-brand-primary shrink-0 mt-1"></i>
+                        <span>Alta performance garantida.</span>
+                    </li>
+                </ul>
+            </div>
+
+            {% if slide.image_prompt %}
+            <div class="flex-1 h-full py-10">
+                <div class="w-full h-full rounded-2xl overflow-hidden glow-box bg-brand-panel p-2">
+                    <img src="{{ slide.image_prompt }}" class="w-full h-full object-cover rounded-xl filter contrast-125 brightness-90 grayscale-[20%]" alt="Visão Tática" />
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <div class="absolute bottom-10 left-20 right-20 flex justify-between items-center text-gray-600 font-mono text-xl border-t border-gray-800 pt-6">
+            <span>{{ title }}</span>
+            <span class="flex items-center gap-2"><i data-lucide="shield" class="w-6 h-6 text-brand-primary"></i> Acesso Restrito</span>
+            <span>Pg. {{ loop.index }}</span>
+        </div>
+    </section>
+    {% endfor %}
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

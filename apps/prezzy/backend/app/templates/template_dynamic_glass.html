@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            primary: 'var(--primary-color)',
+                            secondary: 'var(--secondary-color)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --primary-color: {{ brand.primary_color|default('#8b5cf6') }};
+            --secondary-color: {{ brand.secondary_color|default('#1e1b4b') }};
+        }
+        
+        body { 
+            background-color: var(--secondary-color); 
+            color: #ffffff; 
+            margin: 0;
+            padding: 0;
+        }
+        
+        @page {
+            size: 1920px 1080px;
+            margin: 0;
+        }
+
+        .slide {
+            width: 1920px;
+            height: 1080px;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--primary-color) 40%, transparent), transparent 50%),
+                        radial-gradient(circle at 0% 100%, color-mix(in srgb, var(--secondary-color) 80%, transparent), transparent 50%);
+            background-color: #0f1115; /* Base escura */
+        }
+
+        /* Efeito Mesh Gradient animado (estático no PDF mas dá textura) */
+        .mesh-bg {
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background-image: 
+                radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--primary-color) 15%, transparent) 0%, transparent 40%),
+                radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--secondary-color) 20%, transparent) 0%, transparent 30%);
+            filter: blur(100px);
+            z-index: 0;
+        }
+
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .glass-badge {
+            background: color-mix(in srgb, var(--primary-color) 20%, transparent);
+            backdrop-filter: blur(10px);
+            border: 1px solid color-mix(in srgb, var(--primary-color) 30%, transparent);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CAPA -->
+    <section class="slide p-20 flex items-center justify-center">
+        <div class="mesh-bg"></div>
+        
+        <div class="z-10 w-full max-w-6xl glass-panel rounded-[3rem] p-20 text-center relative overflow-hidden">
+            <!-- Glow interno no topo do glass -->
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-1 bg-gradient-to-r from-transparent via-brand-primary to-transparent opacity-50"></div>
+
+            <div class="inline-flex items-center gap-3 glass-badge px-6 py-2 rounded-full text-white text-lg font-medium tracking-wide mb-12">
+                <i data-lucide="sparkles" class="w-5 h-5 text-brand-primary"></i>
+                Apresentação Gerada por IA
+            </div>
+
+            <h1 class="font-display text-8xl font-extrabold leading-[1.1] mb-10 bg-clip-text text-transparent bg-gradient-to-br from-white via-white to-gray-500">
+                {{ title }}
+            </h1>
+
+            <p class="text-3xl text-gray-300 font-sans max-w-4xl mx-auto leading-relaxed">
+                Design system dinâmico renderizado em tempo real com efeitos de <span class="text-white font-bold border-b border-brand-primary pb-1">Glassmorphism</span>.
+            </p>
+        </div>
+    </section>
+
+    <!-- SLIDES DINÂMICOS -->
+    {% for slide in slides %}
+    <section class="slide p-20">
+        <div class="mesh-bg"></div>
+        
+        <div class="z-10 w-full h-full glass-panel rounded-[3rem] p-16 flex flex-col relative overflow-hidden">
+            <!-- Barra lateral de glow -->
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-[60%] bg-gradient-to-b from-transparent via-brand-primary to-transparent opacity-60"></div>
+
+            <header class="flex justify-between items-center mb-16">
+                <div class="glass-badge px-6 py-2 rounded-full text-white font-display text-xl">
+                    0{{ loop.index }}
+                </div>
+                <div class="w-16 h-16 rounded-full glass-panel flex items-center justify-center">
+                    <i data-lucide="layout-template" class="w-8 h-8 text-white opacity-80"></i>
+                </div>
+            </header>
+
+            <div class="flex-1 flex gap-20 items-center">
+                <div class="flex-1 flex flex-col justify-center">
+                    <h2 class="font-display text-6xl font-bold leading-tight mb-10 text-white">
+                        {{ slide.headline }}
+                    </h2>
+                    
+                    <p class="text-3xl text-gray-300 font-sans leading-[1.6]">
+                        {{ slide.body_text }}
+                    </p>
+                </div>
+
+                {% if slide.image_prompt %}
+                <div class="flex-1 h-full max-h-[600px] flex items-center justify-center">
+                    <div class="relative w-full h-full rounded-3xl overflow-hidden group">
+                        <!-- Pseudo-borda brilhante -->
+                        <div class="absolute -inset-1 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-3xl blur opacity-30"></div>
+                        <img src="{{ slide.image_prompt }}" class="relative w-full h-full object-cover rounded-3xl border border-white/10" alt="Slide Visual" />
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <footer class="mt-8 flex justify-between items-center text-gray-400 font-sans text-xl border-t border-white/10 pt-8">
+                <span>{{ title }}</span>
+                <span>Prezzy Platform</span>
+            </footer>
+        </div>
+    </section>
+    {% endfor %}
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

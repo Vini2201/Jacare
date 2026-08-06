@@ -10,7 +10,15 @@ services:
     volumes:
       # Conecta ao socket do Docker da máquina hospedeira para monitorar containers
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - jacare-network
     environment:
       - PORT=3000
       - DASHBOARD_USER=bsbvinidesousa@gmail.com
       - DASHBOARD_PASS=Cap@2026
+
+networks:
+  jacare-network:
+    name: jacare-network
+    external: true
+

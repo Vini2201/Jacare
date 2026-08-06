@@ -35,6 +35,7 @@ Suba bancos de dados e ambientes de desenvolvimento em segundos:
 | :--- | :--- | :--- |
 | **PostgreSQL 16 + Adminer** | `cd templates/postgres-adminer && docker compose up -d` | `8080` (Adminer GUI) |
 | **MySQL 8.0 + phpMyAdmin** | `cd templates/mysql-phpmyadmin && docker compose up -d` | `8081` (phpMyAdmin) |
+| **Prezzy SaaS Suite** | `cd apps/prezzy && docker compose up -d` | `8000` (API) / `3000` (App) |
 
 ---
 
