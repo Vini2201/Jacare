@@ -21,18 +21,16 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+    env_file:
+      - .env
     environment:
       - REDIS_URL=redis://redis:6379
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
-      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
-      - GROQ_API_KEY=${GROQ_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
     depends_on:
       redis:
         condition: service_healthy
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - jacare-network
 
   worker:
     build: 
@@ -41,18 +39,34 @@ services:
     volumes:
       - ./backend:/app
       - ./prezzy_prd.html:/app/app/templates/prezzy_prd.html
+    env_file:
+      - .env
     environment:
       - REDIS_URL=redis://redis:6379
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
-      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
-      - GROQ_API_KEY=${GROQ_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
     depends_on:
       redis:
         condition: service_healthy
     command: arq worker.WorkerSettings
+    networks:
+      - jacare-network
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: prezzy_frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - api
+    networks:
+      - jacare-network
+
+networks:
+  jacare-network:
+    external: true
 
 volumes:
   redis_data:
+

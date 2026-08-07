@@ -100,7 +100,8 @@ function renderEasypanelContainers(containers) {
 
         <div class="actions-row" style="margin-top:auto;">
           <button class="btn btn-logs" onclick="openContainerLogs('${c.id}', '${c.name}')">📄 Logs</button>
-          <button class="btn" onclick="openRebindPortModal('${c.id}', '${c.ports[0] ? c.ports[0].split(':')[0] : ''}')">🔌 Mudar Porta</button>
+          <button class="btn" style="border-color:var(--brand-purple); color:var(--brand-purple);" onclick="openInspectModal('${c.id}')">⚙️ Environments</button>
+          <button class="btn" onclick="openRebindPortModal('${c.id}', '${c.ports[0] ? c.ports[0].split(':')[0] : ''}')">🔌 Porta</button>
           ${isRunning 
             ? `<button class="btn btn-stop" onclick="controlContainer('${c.id}', 'stop')">⏹️ Parar</button>`
             : `<button class="btn btn-start" onclick="controlContainer('${c.id}', 'start')">▶️ Iniciar</button>`
@@ -149,6 +150,77 @@ async function openContainerLogs(id, name) {
 document.getElementById('btn-close-modal').addEventListener('click', () => {
   document.getElementById('logs-modal').classList.remove('active');
 });
+
+async function openInspectModal(id) {
+  const modal = document.getElementById('inspect-modal');
+  const title = document.getElementById('inspect-modal-title');
+  const body = document.getElementById('inspect-modal-body');
+
+  title.innerText = 'Carregando dados...';
+  body.innerHTML = 'Buscando variáveis e strings de conexão...';
+  modal.classList.add('active');
+
+  try {
+    const res = await fetch(`/api/containers/${id}/inspect`);
+    const data = await res.json();
+
+    title.innerText = `🔑 Credenciais: ${data.name}`;
+
+    let html = '';
+
+    if (data.connectionStrings && data.connectionStrings.length > 0) {
+      html += `<div style="margin-bottom:1rem;">
+        <label style="font-weight:600; color:var(--brand-purple);">String de Conexão Rápida (DATABASE_URL)</label>
+        ${data.connectionStrings.map(str => `
+          <div style="display:flex; gap:0.5rem; margin-top:0.25rem;">
+            <input type="text" readonly value="${str}" class="form-input" style="font-family:monospace; font-size:0.8rem;">
+            <button class="btn btn-sm" onclick="navigator.clipboard.writeText('${str}'); alert('Copiado!')">Copiar</button>
+          </div>
+        `).join('')}
+      </div>`;
+    }
+
+    html += `<div style="margin-top:1rem;">
+      <label style="font-weight:600; color:var(--text-primary);">Editor de Variáveis de Ambiente (.env / Environment)</label>
+      <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;">Edite uma variável por linha no formato <code>CHAVE=VALOR</code> e clique em salvar para recriar o serviço.</p>
+      <textarea id="inspect-env-textarea" class="form-input" style="height:150px; font-family:monospace; font-size:0.8rem; line-height:1.4;">${data.env.join('\n')}</textarea>
+      <div style="display:flex; justify-content:flex-end; margin-top:0.75rem;">
+        <button class="btn btn-primary btn-sm" onclick="saveContainerEnvironments('${id}')">💾 Salvar & Recriar Container</button>
+      </div>
+    </div>`;
+
+    body.innerHTML = html;
+  } catch (e) {
+    body.innerText = `Erro ao carregar dados: ${e.message}`;
+  }
+}
+
+async function saveContainerEnvironments(id) {
+  const rawText = document.getElementById('inspect-env-textarea').value;
+  const envVars = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0 && l.includes('='));
+
+  try {
+    const res = await fetch(`/api/containers/${id}/update-env`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ envVars })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(data.message);
+      closeInspectModal();
+    } else {
+      alert(`Erro: ${data.error}`);
+    }
+  } catch (e) {
+    alert(`Erro na requisição: ${e.message}`);
+  }
+}
+
+function closeInspectModal() {
+  document.getElementById('inspect-modal').classList.remove('active');
+}
+
 
 function openRebindPortModal(id, currentPort) {
   document.getElementById('rebind-container-id').value = id;
@@ -348,6 +420,37 @@ function handleTerminalCommand(event) {
   }
 }
 
+// ----------------------------------------------------
+// TELEGRAM DISPARADOR DE MENSAGENS
+// ----------------------------------------------------
+async function sendTelegramMessage(event) {
+  event.preventDefault();
+  const peer = document.getElementById('telegram-chat-id').value.trim();
+  const message = document.getElementById('telegram-message-input').value.trim();
+
+  if (!peer || !message) {
+    alert('Por favor, preencha o destinatário e a mensagem.');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/telegram/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ peer, message })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('🚀 Mensagem enviada com sucesso pelo Telegram!');
+      document.getElementById('telegram-message-input').value = '';
+    } else {
+      alert(`⚠️ Erro ao enviar: ${data.error || 'Verifique se a sessão do Telegram está ativa na porta 4000'}`);
+    }
+  } catch (e) {
+    alert(`Erro na requisição: ${e.message}`);
+  }
+}
+
 // Utilities
 function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -359,3 +462,4 @@ function formatMarkdown(str) {
     .replace(/`(.*?)`/g, '<code class="cell-code">$1</code>')
     .replace(/\n/g, '<br>');
 }
+

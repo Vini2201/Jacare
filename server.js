@@ -35,19 +35,18 @@ ensureNetwork();
 const DASHBOARD_USER = process.env.DASHBOARD_USER || 'admin';
 const DASHBOARD_PASS = process.env.DASHBOARD_PASS || 'scalegrid_secret_pass';
 
+function checkAuth(authHeader) {
+  if (!authHeader) return false;
+  const auth = Buffer.from(authHeader.split(' ')[1] || '', 'base64').toString().split(':');
+  return auth[0] === DASHBOARD_USER && auth[1] === DASHBOARD_PASS;
+}
+
 const basicAuthMiddleware = (req, res, next) => {
   if (req.path === '/api/health' || req.path === '/api/webhook/trigger' || req.path === '/api/mcp/rpc') {
     return next();
   }
 
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    res.setHeader('WWW-Authenticate', 'Basic realm="Jacare Engine Access"');
-    return res.status(401).send('Acesso Negado: Autenticação requerida.');
-  }
-
-  const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-  if (auth[0] === DASHBOARD_USER && auth[1] === DASHBOARD_PASS) {
+  if (checkAuth(req.headers.authorization)) {
     return next();
   }
 
@@ -55,9 +54,42 @@ const basicAuthMiddleware = (req, res, next) => {
   return res.status(401).send('Acesso Negado: Credenciais incorretas.');
 };
 
+// Autenticar Socket.io
+io.use((socket, next) => {
+  const req = socket.request;
+  const authHeader = req.headers.authorization || (req._query && req._query.auth);
+  // Permitir conexão web de mesma origem se cookies/headers forem válidos
+  if (req.headers.host && (req.headers.referer || req.headers.origin)) {
+    return next();
+  }
+  if (checkAuth(authHeader)) {
+    return next();
+  }
+  return next(new Error('Autenticação de Socket negada.'));
+});
+
 app.use(basicAuthMiddleware);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+
+// 📩 PROXY TELEGRAM SERVICE
+app.post('/api/telegram/send', async (req, res) => {
+  const { peer, message } = req.body;
+  const telegramServiceUrl = process.env.TELEGRAM_SERVICE_URL || 'http://telegram_mtproto_service:4000';
+  
+  try {
+    const fetchRes = await fetch(`${telegramServiceUrl}/api/send-message`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ peer, message })
+    });
+    const data = await fetchRes.json();
+    res.status(fetchRes.status).json(data);
+  } catch (err) {
+    res.status(500).json({ error: `Erro de comunicação com Telegram Service: ${err.message}` });
+  }
+});
+
 
 // 🤖 CONFIGURAÇÃO DO AGENTE DE IA (HERMES / JACARÉ AGENT)
 let aiConfig = {
@@ -359,9 +391,7 @@ app.post('/api/deploy', async (req, res) => {
       containerName = name || `redis-cache-${Date.now()}`;
       portBindings = { '6379/tcp': [{ HostPort: String(portHost || '6379') }] };
     } else if (type === 'prezzy') {
-      imageName = 'python:3.11-slim';
-      containerName = name || `prezzy-suite-${Date.now()}`;
-      portBindings = { '8000/tcp': [{ HostPort: String(portHost || '8000') }] };
+      return res.status(400).json({ error: 'Para implantar a suíte Prezzy completa com Frontend + FastAPI + Worker, acesse o terminal e rode: cd apps/prezzy && docker compose up -d' });
     } else if (type === 'custom' && customImage) {
       containerName = name || `custom-app-${Date.now()}`;
       if (portHost && portContainer) {
@@ -401,6 +431,40 @@ app.post('/api/containers/:id/:action', async (req, res) => {
     else return res.status(400).json({ error: 'Ação inválida' });
 
     res.json({ success: true, message: `Container ${action} executado com sucesso!` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Alterar Variáveis de Ambiente de um container (Easypanel Style: Stop -> Remove -> Recreate com novos ENVs)
+app.post('/api/containers/:id/update-env', async (req, res) => {
+  const { id } = req.params;
+  const { envVars } = req.body; // Array de strings ex: ["POSTGRES_PASSWORD=nova_senha", "KEY=val"]
+
+  try {
+    const container = docker.getContainer(id);
+    const inspectData = await container.inspect();
+
+    const name = inspectData.Name.replace('/', '');
+    const image = inspectData.Config.Image;
+    const portBindings = inspectData.HostConfig.PortBindings || {};
+
+    try { await container.stop(); } catch (e) {}
+    await container.remove({ force: true });
+
+    const newContainer = await docker.createContainer({
+      Image: image,
+      name,
+      Env: envVars || [],
+      HostConfig: {
+        PortBindings: portBindings,
+        NetworkMode: 'jacare-network',
+        RestartPolicy: { Name: 'always' }
+      }
+    });
+
+    await newContainer.start();
+    res.json({ success: true, message: `Variáveis de ambiente do serviço ${name} atualizadas com sucesso!` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -452,6 +516,50 @@ app.post('/api/terminal/exec', (req, res) => {
   exec(command, { cwd: '/app' }, (err, stdout, stderr) => {
     res.json({ output: stdout || stderr || (err ? err.message : 'Executado.') });
   });
+});
+
+// Inspeção detalhada de container (Variáveis de ambiente e credenciais de conexão estilo Easypanel)
+app.get('/api/containers/:id/inspect', async (req, res) => {
+  try {
+    const container = docker.getContainer(req.params.id);
+    const data = await container.inspect();
+    
+    const envVars = data.Config.Env || [];
+    const ports = data.HostConfig.PortBindings || {};
+    const name = data.Name.replace('/', '');
+    const image = data.Config.Image;
+
+    // Tentar extrair string de conexão de bancos se for Postgres/MySQL/Redis
+    let connectionStrings = [];
+    const hostIp = process.env.PUBLIC_IP || '13.222.3.171';
+    
+    if (image.includes('postgres')) {
+      const user = (envVars.find(e => e.startsWith('POSTGRES_USER=')) || '=jacare').split('=')[1];
+      const pass = (envVars.find(e => e.startsWith('POSTGRES_PASSWORD=')) || '=').split('=')[1];
+      const db = (envVars.find(e => e.startsWith('POSTGRES_DB=')) || '=jacare_db').split('=')[1];
+      const hostPort = Object.keys(ports).length ? ports[Object.keys(ports)[0]][0].HostPort : '5432';
+      connectionStrings.push(`postgresql://${user}:${pass}@${hostIp}:${hostPort}/${db}`);
+    } else if (image.includes('mysql')) {
+      const user = (envVars.find(e => e.startsWith('MYSQL_USER=')) || '=root').split('=')[1];
+      const pass = (envVars.find(e => e.startsWith('MYSQL_PASSWORD=')) || envVars.find(e => e.startsWith('MYSQL_ROOT_PASSWORD=')) || '=').split('=')[1];
+      const db = (envVars.find(e => e.startsWith('MYSQL_DATABASE=')) || '=').split('=')[1];
+      const hostPort = Object.keys(ports).length ? ports[Object.keys(ports)[0]][0].HostPort : '3306';
+      connectionStrings.push(`mysql://${user}:${pass}@${hostIp}:${hostPort}/${db}`);
+    } else if (image.includes('redis')) {
+      const hostPort = Object.keys(ports).length ? ports[Object.keys(ports)[0]][0].HostPort : '6379';
+      connectionStrings.push(`redis://${hostIp}:${hostPort}`);
+    }
+
+    res.json({
+      name,
+      image,
+      env: envVars,
+      ports,
+      connectionStrings
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Logs do container
